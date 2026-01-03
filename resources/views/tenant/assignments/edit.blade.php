@@ -1,0 +1,389 @@
+@extends('tenant.layouts.app')
+
+@section('content')
+<div class="max-w-7xl mx-auto animate-fade-in">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="p-2 bg-gray-850 rounded-lg">
+                        <span class="text-xl">🔗</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-white">Modifier l'Affectation</h1>
+                        <p class="text-gray-400 text-sm mt-1">Modifier l'affectation de matière à une classe</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div class="text-sm text-gray-500 hidden sm:flex items-center gap-2">
+                    <a href="/dashboard" class="hover:text-gray-300 transition-colors">Dashboard</a>
+                    <span class="text-gray-600">/</span>
+                    <a href="/assignments" class="hover:text-gray-300 transition-colors">Affectations</a>
+                    <span class="text-gray-600">/</span>
+                    <span class="text-gray-300">{{ $assignment->subject->name }}</span>
+                </div>
+                <a href="/assignments"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-850 hover:bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 hover:text-white transition-all duration-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Retour
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Form -->
+        <div class="lg:col-span-2">
+            <form action="{{ route('assignments.update', [
+                                    'tenant' => app('tenant')->name,
+                                    'assignment' => $assignment->id
+                                ]) }}" method="POST" class="space-y-6">
+                @csrf
+                @method('PUT')
+                
+                <!-- Form Card -->
+                <div class="bg-gray-900 border border-gray-800 rounded-xl shadow-xl overflow-hidden card-hover">
+                    <!-- Card Header -->
+                    <div class="px-6 py-5 border-b border-gray-800 bg-gradient-to-r from-gray-900 to-gray-850">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-white flex items-center gap-3">
+                                <div class="w-2 h-6 bg-primary-600 rounded-full"></div>
+                                Informations de l'affectation
+                            </h2>
+                            <span class="text-xs text-gray-500 px-3 py-1 bg-gray-850 rounded-full">
+                                ID: {{ $assignment->id }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Body -->
+                    <div class="p-6 space-y-6">
+                        <!-- Classe (non modifiable) -->
+                        <div class="animate-slide-in" style="animation-delay: 0.1s">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                    <span class="w-2 h-2 bg-primary-600 rounded-full"></span>
+                                    Classe
+                                </label>
+                                <span class="text-xs text-gray-500">Non modifiable</span>
+                            </div>
+                            <div class="p-4 bg-gray-850/50 rounded-lg border border-gray-700">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-primary-600/10 rounded-lg flex items-center justify-center">
+                                        <span class="text-primary-600">🏫</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-white">{{ $assignment->schoolClass->name }}</div>
+                                        <div class="text-sm text-gray-500">{{ $assignment->schoolClass->year->name ?? 'N/A' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="class_id" value="{{ $assignment->class_id }}">
+                        </div>
+                        
+                        <!-- Matière (non modifiable) -->
+                        <div class="animate-slide-in" style="animation-delay: 0.2s">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                    <span class="w-2 h-2 bg-success rounded-full"></span>
+                                    Matière
+                                </label>
+                                <span class="text-xs text-gray-500">Non modifiable</span>
+                            </div>
+                            <div class="p-4 bg-gray-850/50 rounded-lg border border-gray-700">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
+                                        <span class="text-success">📚</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-white">{{ $assignment->subject->name }}</div>
+                                        <div class="text-sm text-gray-500">{{ $assignment->subject->code }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="subject_id" value="{{ $assignment->subject_id }}">
+                        </div>
+                        
+                        <!-- Professeur -->
+                        <div class="animate-slide-in" style="animation-delay: 0.3s">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                    <span class="w-2 h-2 bg-warning rounded-full"></span>
+                                    Professeur
+                                </label>
+                                <span class="text-xs text-gray-500">Modifiable</span>
+                            </div>
+                            <div class="relative">
+                                <select name="teacher_id" 
+                                        class="w-full bg-gray-850 border border-gray-700 rounded-lg px-4 py-3.5 text-white focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 transition-all duration-200 appearance-none">
+                                    <option value="">Non assigné</option>
+                                    @foreach($teachers as $teacher)
+                                        <option value="{{ $teacher->id }}" 
+                                                {{ old('teacher_id', $assignment->teacher_id) == $teacher->id ? 'selected' : '' }}
+                                                class="bg-gray-900 py-2">
+                                            {{ $teacher->first_name }} {{ $teacher->last_name }}
+                                            @if($teacher->email)
+                                                ({{ $teacher->email }})
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            @error('teacher_id')
+                                <div class="mt-2 flex items-center gap-2 text-sm text-danger">
+                                    <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        
+                        <!-- Heures par semaine & Coefficient -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="animate-slide-in" style="animation-delay: 0.4s">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                        <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+                                        Heures par semaine
+                                    </label>
+                                    <span class="text-xs text-gray-500">0-40 heures</span>
+                                </div>
+                                <div class="relative">
+                                    <input type="number" 
+                                           name="hours_per_week" 
+                                           value="{{ old('hours_per_week', $assignment->hours_per_week) }}"
+                                           min="0"
+                                           max="40"
+                                           step="0.5"
+                                           required
+                                           class="w-full bg-gray-850 border border-gray-700 rounded-lg px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 transition-all duration-200">
+                                    <div class="absolute left-0 top-0 bottom-0 flex items-center pl-4 pointer-events-none">
+                                        <span class="text-gray-500">⏱️</span>
+                                    </div>
+                                    <div class="absolute right-0 top-0 bottom-0 flex items-center pr-4 pointer-events-none">
+                                        <span class="text-gray-500 text-sm">h/sem</span>
+                                    </div>
+                                </div>
+                                @error('hours_per_week')
+                                    <div class="mt-2 flex items-center gap-2 text-sm text-danger">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                            
+                            <div class="animate-slide-in" style="animation-delay: 0.5s">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                        <span class="w-2 h-2 bg-pink-500 rounded-full"></span>
+                                        Coefficient
+                                    </label>
+                                    <span class="text-xs text-gray-500">0.1 - 10</span>
+                                </div>
+                                <div class="relative">
+                                    <input type="number" 
+                                           name="coefficient" 
+                                           value="{{ old('coefficient', $assignment->coefficient) }}"
+                                           min="0.1"
+                                           max="10"
+                                           step="0.1"
+                                           required
+                                           class="w-full bg-gray-850 border border-gray-700 rounded-lg px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 transition-all duration-200">
+                                    <div class="absolute left-0 top-0 bottom-0 flex items-center pl-4 pointer-events-none">
+                                        <span class="text-gray-500">⚖️</span>
+                                    </div>
+                                    <div class="absolute right-0 top-0 bottom-0 flex items-center pr-4 pointer-events-none">
+                                        <span class="text-gray-500 text-sm">coef.</span>
+                                    </div>
+                                </div>
+                                @error('coefficient')
+                                    <div class="mt-2 flex items-center gap-2 text-sm text-danger">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <!-- Active Status -->
+                        <div class="animate-slide-in" style="animation-delay: 0.6s">
+                            <div class="flex items-center justify-between p-4 bg-gray-850/50 rounded-lg border border-gray-700">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 {{ $assignment->is_active ? 'bg-success/10' : 'bg-danger/10' }} rounded-lg">
+                                        <span class="{{ $assignment->is_active ? 'text-success' : 'text-danger' }}">✅</span>
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-300">Statut de l'affectation</label>
+                                        <p class="text-xs text-gray-500 mt-1">Activez ou désactivez cette affectation</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" 
+                                           name="is_active" 
+                                           value="1"
+                                           {{ old('is_active', $assignment->is_active) ? 'checked' : '' }}
+                                           class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Footer -->
+                    <div class="px-6 py-5 border-t border-gray-800 bg-gray-900/50">
+                        <div class="flex justify-end gap-3">
+                            <a href="/assignments"
+                               class="px-5 py-2.5 border border-gray-700 text-gray-300 hover:text-white hover:bg-gray-850 hover:border-gray-600 rounded-lg font-medium transition-all duration-200">
+                                Annuler
+                            </a>
+                            <button type="submit"
+                                    class="px-6 py-2.5 bg-gradient-to-r from-primary-600 to-info hover:from-primary-700 hover:to-info/90 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-primary-600/20 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Mettre à jour
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Sidebar Information -->
+        <div class="space-y-6">
+            <!-- Assignment Info Card -->
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 card-hover">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="text-sm font-semibold text-gray-300 flex items-center gap-3">
+                        <div class="w-2 h-5 bg-info rounded-full"></div>
+                        Informations actuelles
+                    </h3>
+                    <span class="text-xs px-2 py-1 bg-info/10 text-info rounded-full">
+                        ID: {{ $assignment->id }}
+                    </span>
+                </div>
+                <div class="space-y-4">
+                    <div class="p-3 bg-gray-850/50 rounded-lg">
+                        <div class="text-xs text-gray-500 mb-1">Créée le</div>
+                        <div class="text-sm text-white">{{ $assignment->created_at->format('d/m/Y à H:i') }}</div>
+                    </div>
+                    <div class="p-3 bg-gray-850/50 rounded-lg">
+                        <div class="text-xs text-gray-500 mb-1">Dernière modification</div>
+                        <div class="text-sm text-white">{{ $assignment->updated_at->format('d/m/Y à H:i') }}</div>
+                    </div>
+                    <div class="p-3 bg-gray-850/50 rounded-lg">
+                        <div class="text-xs text-gray-500 mb-1">Statut actuel</div>
+                        <div class="text-sm {{ $assignment->is_active ? 'text-green-400' : 'text-red-400' }}">
+                            {{ $assignment->is_active ? 'Active' : 'Inactive' }}
+                        </div>
+                    </div>
+                    <div class="p-3 bg-gray-850/50 rounded-lg">
+                        <div class="text-xs text-gray-500 mb-1">Professeur actuel</div>
+                        @if($assignment->teacher)
+                        <div class="flex items-center gap-2 mt-1">
+                            <div class="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center">
+                                <span class="text-success text-xs">👨‍🏫</span>
+                            </div>
+                            <div class="text-sm text-white">
+                                {{ $assignment->teacher->first_name }} {{ $assignment->teacher->last_name }}
+                            </div>
+                        </div>
+                        @else
+                        <div class="text-sm text-gray-500 italic">Non assigné</div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 card-hover">
+                <h3 class="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-3">
+                    <div class="w-2 h-5 bg-warning rounded-full"></div>
+                    Actions
+                </h3>
+                <div class="space-y-3">
+                    <a href="{{ route('assignments.show', [
+                                    'tenant' => app('tenant')->name,
+                                    'assignment' => $assignment->id
+                                ]) }}"
+                       class="w-full flex items-center justify-center gap-2 p-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-600/20 rounded-lg transition-all duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        Voir les détails
+                    </a>
+                    
+                    <form action="" method="POST" class="mb-4">
+                        @csrf
+                        <button type="submit" 
+                                onclick="return confirm('Êtes-vous sûr de vouloir changer le statut de cette affectation ?')"
+                                class="w-full flex items-center justify-center gap-2 p-3 {{ $assignment->is_active ? 'bg-danger/10 hover:bg-danger/20 text-danger' : 'bg-success/10 hover:bg-success/20 text-success' }} border border-current/20 rounded-lg transition-all duration-200">
+                            @if($assignment->is_active)
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Désactiver l'affectation
+                            @else
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Activer l'affectation
+                            @endif
+                        </button>
+                    </form>
+                    
+                    <form action="/assignments/destroy/{{$assignment}}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" 
+                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette affectation ? Cette action est irréversible.')"
+                                class="w-full flex items-center justify-center gap-2 p-3 bg-danger/10 hover:bg-danger/20 text-danger border border-danger/20 rounded-lg transition-all duration-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Supprimer cette affectation
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Stats Card -->
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 card-hover">
+                <h3 class="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-3">
+                    <div class="w-2 h-5 bg-purple-500 rounded-full"></div>
+                    Statistiques
+                </h3>
+                <div class="space-y-3">
+                    <div class="p-3 bg-gray-850/50 rounded-lg">
+                        <div class="text-xs text-gray-500 mb-1">Heures totales par an</div>
+                        <div class="text-lg font-bold text-white">{{ $assignment->hours_per_week * 36 }}</div>
+                        <div class="text-xs text-gray-500 mt-1">sur 36 semaines</div>
+                    </div>
+                    <div class="p-3 bg-gray-850/50 rounded-lg">
+                        <div class="text-xs text-gray-500 mb-1">Poids total</div>
+                        <div class="text-lg font-bold text-purple-400">{{ $assignment->hours_per_week * $assignment->coefficient }}</div>
+                        <div class="text-xs text-gray-500 mt-1">heures × coefficient</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
