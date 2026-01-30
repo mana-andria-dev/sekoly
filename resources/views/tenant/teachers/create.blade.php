@@ -172,16 +172,7 @@
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Diplôme académique *</label>
-                            <input type="text" name="academic_degree" required value="{{ old('academic_degree') }}"
-                                   class="w-full bg-gray-800 border {{ $errors->has('academic_degree') ? 'border-red-500' : 'border-gray-700' }} rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent"
-                                   placeholder="Ex: Master, Licence, Doctorat...">
-                            @error('academic_degree')
-                            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    
                     </div>
                     
                     <div class="space-y-4">
@@ -194,24 +185,34 @@
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
-                        
+
                         <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Diplôme académique *</label>
+                            <input type="text" name="academic_degree" required value="{{ old('academic_degree') }}"
+                                   class="w-full bg-gray-800 border {{ $errors->has('academic_degree') ? 'border-red-500' : 'border-gray-700' }} rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+                                   placeholder="Ex: Master, Licence, Doctorat...">
+                            @error('academic_degree')
+                            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>                        
+                        
+                        <!-- <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Taux horaire (Ar)</label>
                             <input type="number" step="0.01" name="hourly_rate" value="{{ old('hourly_rate') }}"
                                    class="w-full bg-gray-800 border {{ $errors->has('hourly_rate') ? 'border-red-500' : 'border-gray-700' }} rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent">
                             @error('hourly_rate')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
-                        </div>
+                        </div> -->
                         
-                        <div>
+                        <!-- <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Heures/semaine</label>
                             <input type="number" name="hours_per_week" value="{{ old('hours_per_week', 20) }}"
                                    class="w-full bg-gray-800 border {{ $errors->has('hours_per_week') ? 'border-red-500' : 'border-gray-700' }} rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent">
                             @error('hours_per_week')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
-                        </div>
+                        </div> -->
                     </div>
                 </div>
                 
@@ -245,14 +246,14 @@
                             @enderror
                         </div>
                         
-                        <div>
+                        <!-- <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Nationalité</label>
                             <input type="text" name="nationality" value="{{ old('nationality') }}"
                                    class="w-full bg-gray-800 border {{ $errors->has('nationality') ? 'border-red-500' : 'border-gray-700' }} rounded-lg px-4 py-3 text-white">
                             @error('nationality')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
-                        </div>
+                        </div> -->
 
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Ville</label>
@@ -303,29 +304,29 @@
                             @enderror
                         </div>
 
-                        <div>
+                        <!-- <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Pays</label>
                             <input type="text" name="country" value="{{ old('country') }}"
                                    class="w-full bg-gray-800 border {{ $errors->has('country') ? 'border-red-500' : 'border-gray-700' }} rounded-lg px-4 py-3 text-white">
                             @error('country')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
-                        </div>
+                        </div> -->
                     </div>
                 </div>
                 
                 <!-- Notes -->
-                <div class="mt-6">
+                <!-- <div class="mt-6">
                     <label class="block text-sm font-medium text-gray-300 mb-2">Notes</label>
                     <textarea name="notes" rows="3"
                               class="w-full bg-gray-800 border {{ $errors->has('notes') ? 'border-red-500' : 'border-gray-700' }} rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent">{{ old('notes') }}</textarea>
                     @error('notes')
                     <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                     @enderror
-                </div>
+                </div> -->
                 
                 <!-- Compte utilisateur -->
-                <div class="mt-6 p-4 bg-gray-800/50 rounded-lg">
+                <!-- <div class="mt-6 p-4 bg-gray-800/50 rounded-lg">
                     <div class="flex items-center gap-3">
                         <input type="checkbox" name="create_user_account" id="create_user_account" 
                                value="1" {{ old('create_user_account') ? 'checked' : '' }}
@@ -340,7 +341,7 @@
                     @error('create_user_account')
                     <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                     @enderror
-                </div>
+                </div> -->
             </div>
             
             <!-- Actions -->

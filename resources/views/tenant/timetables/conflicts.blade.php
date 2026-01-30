@@ -173,7 +173,7 @@
                                    class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white">
                                     Modifier le 2ème créneau
                                 </a>
-                                <form action="{{ route('timetable-slots.destroy', ['tenant' => app('tenant')->name, 'slot' => $conflict['slot1']->id]) }}" 
+                                <form action="{{ route('timetable-slots.destroy', ['tenant' => app('tenant')->name, 'timetable_slot' => $conflict['slot1']->id]) }}" 
                                       method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')

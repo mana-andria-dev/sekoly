@@ -20,12 +20,12 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                 Classe
                             </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            <!-- <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                 Horaires
                             </th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                 Période
-                            </th>
+                            </th> -->
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                 Statut
                             </th>
@@ -51,7 +51,7 @@
                                 <div class="font-medium text-white">{{ $assignment->schoolClass->name }}</div>
                                 <div class="text-xs text-gray-500">{{ $assignment->schoolClass->level ?? '' }}</div>
                             </td>
-                            <td class="px-4 py-4">
+                            <!-- <td class="px-4 py-4">
                                 <div class="text-sm text-white">{{ $assignment->hours_per_week }}h/semaine</div>
                                 <div class="text-xs text-gray-500">
                                     @if($assignment->day_of_week)
@@ -63,16 +63,16 @@
                             </td>
                             <td class="px-4 py-4">
                                 <div class="text-sm text-white">
-                                    {{ $assignment->start_date->format('d/m/Y') }}
+                                    {{ $assignment->start_date }}
                                 </div>
                                 <div class="text-xs text-gray-500">
                                     @if($assignment->end_date)
-                                        au {{ $assignment->end_date->format('d/m/Y') }}
+                                        au {{ $assignment->end_date }}
                                     @else
                                         Indéterminée
                                     @endif
                                 </div>
-                            </td>
+                            </td> -->
                             <td class="px-4 py-4">
                                 @php
                                     $statusColors = [
@@ -88,25 +88,6 @@
                         </tr>
                         @endforeach
                     </tbody>
-                    <tfoot class="bg-gray-850/50">
-                        <tr>
-                            <td colspan="2" class="px-4 py-3 text-sm text-gray-400">
-                                Total heures/semaine
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="text-lg font-bold text-primary-400">
-                                    {{ $teacher->assignments->sum('hours_per_week') }}h
-                                </div>
-                            </td>
-                            <td colspan="2" class="px-4 py-3 text-right">
-                                <a href="#assignments-content" 
-                                   onclick="switchTab('assignments')"
-                                   class="text-sm text-primary-400 hover:text-primary-300">
-                                    Voir toutes les affectations →
-                                </a>
-                            </td>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         @else

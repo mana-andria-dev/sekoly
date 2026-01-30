@@ -147,6 +147,7 @@
                 </div>
                 
                 <!-- Options -->
+                <!-- 
                 <div class="bg-gray-800/50 rounded-lg p-4">
                     <div class="flex items-center gap-3">
                         <input type="checkbox" id="generate_from_assignments" name="generate_from_assignments" value="1"
@@ -160,6 +161,7 @@
                         Vous pourrez toujours modifier les créneaux ensuite.
                     </p>
                 </div>
+                -->
                 
                 <!-- Actions -->
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">

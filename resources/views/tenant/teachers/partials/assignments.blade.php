@@ -8,9 +8,6 @@
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-white">Affectations actuelles</h2>
                 <div class="flex items-center gap-3">
-                    <span class="text-sm text-gray-400">
-                        Total: {{ $teacher->assignments->sum('hours_per_week') }}h/semaine
-                    </span>
                     <span class="text-sm text-gray-400">{{ $teacher->assignments->count() }} affectation(s)</span>
                 </div>
             </div>
@@ -27,12 +24,6 @@
                             </th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                 Matière
-                            </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Horaires
-                            </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Période
                             </th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                 Statut
@@ -52,28 +43,6 @@
                             <td class="px-4 py-4">
                                 <div class="font-medium text-white">{{ $assignment->subject->name }}</div>
                                 <div class="text-xs text-gray-500">{{ $assignment->subject->code }}</div>
-                            </td>
-                            <td class="px-4 py-4">
-                                <div class="text-sm text-white">{{ $assignment->hours_per_week }}h/semaine</div>
-                                <div class="text-xs text-gray-500">
-                                    @if($assignment->day_of_week)
-                                    {{ ucfirst($assignment->day_of_week) }}
-                                    @else
-                                    Non défini
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="px-4 py-4">
-                                <div class="text-sm text-white">
-                                    {{ $assignment->start_date->format('d/m/Y') }}
-                                </div>
-                                <div class="text-xs text-gray-500">
-                                    @if($assignment->end_date)
-                                    au {{ $assignment->end_date->format('d/m/Y') }}
-                                    @else
-                                    Indéterminée
-                                    @endif
-                                </div>
                             </td>
                             <td class="px-4 py-4">
                                 @php

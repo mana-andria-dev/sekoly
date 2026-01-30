@@ -13,7 +13,7 @@
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent">
                     <option value="">Sélectionner une classe</option>
                     @foreach($availableClasses as $class)
-                        <option value="{{ $class->id }}">{{ $class->name }} ({{ $class->level }})</option>
+                        <option value="{{ $class->id }}">{{ $class->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -31,22 +31,19 @@
             </div>
         </div>
         
+        <!--
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <!-- Heures par semaine -->
             <div>
                 <label class="block text-sm font-medium text-gray-400 mb-2">Heures/semaine</label>
                 <input type="number" name="hours_per_week" required min="1" max="40"
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent">
             </div>
             
-            <!-- Coefficient -->
             <div>
                 <label class="block text-sm font-medium text-gray-400 mb-2">Coefficient</label>
                 <input type="number" step="0.1" name="coefficient" required min="0.1" max="10"
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent">
             </div>
-            
-            <!-- Jour de la semaine -->
             <div>
                 <label class="block text-sm font-medium text-gray-400 mb-2">Jour</label>
                 <select name="day_of_week"
@@ -64,20 +61,19 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <!-- Date de début -->
             <div>
                 <label class="block text-sm font-medium text-gray-400 mb-2">Date de début</label>
                 <input type="date" name="start_date" required
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent">
             </div>
             
-            <!-- Date de fin -->
             <div>
                 <label class="block text-sm font-medium text-gray-400 mb-2">Date de fin (optionnel)</label>
                 <input type="date" name="end_date"
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent">
             </div>
         </div>
+        -->
         
         <div class="flex justify-end gap-3">
             <button type="button" onclick="resetForm()"

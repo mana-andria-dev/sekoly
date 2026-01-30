@@ -388,11 +388,11 @@ class TeacherController extends Controller
         $validatedData = $request->validate([
             'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
-            'hours_per_week' => 'required|integer|min:1|max:40',
-            'coefficient' => 'required|numeric|min:0.1|max:10',
-            'day_of_week' => 'nullable|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after:start_date',
+            // 'hours_per_week' => 'required|integer|min:1|max:40',
+            // 'coefficient' => 'required|numeric|min:0.1|max:10',
+            // 'day_of_week' => 'nullable|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            // 'start_date' => 'required|date',
+            // 'end_date' => 'nullable|date|after:start_date',
         ]);
 
         // VÉRIFICATION CRITIQUE : S'assurer que le professeur a un user_id
@@ -436,11 +436,11 @@ class TeacherController extends Controller
             $assignment->class_id = $validatedData['class_id'];
             $assignment->subject_id = $validatedData['subject_id'];
             $assignment->teacher_id = $teacher->user_id; // C'est le user_id
-            $assignment->hours_per_week = $validatedData['hours_per_week'];
-            $assignment->coefficient = $validatedData['coefficient'];
-            $assignment->day_of_week = $validatedData['day_of_week'] ?? null;
-            $assignment->start_date = $validatedData['start_date'];
-            $assignment->end_date = $validatedData['end_date'] ?? null;
+            $assignment->hours_per_week = 1;//$validatedData['hours_per_week'];
+            $assignment->coefficient = 1;//$validatedData['coefficient'];
+            $assignment->day_of_week = 1;//$validatedData['day_of_week'] ?? null;
+            $assignment->start_date = null;//$validatedData['start_date'];
+            $assignment->end_date = null;//$validatedData['end_date'] ?? null;
             $assignment->status = 'active';
             $assignment->is_active = true;
             

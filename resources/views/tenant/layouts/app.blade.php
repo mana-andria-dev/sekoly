@@ -177,6 +177,7 @@
                         </li>   
 
                         <!-- Affectations (NOUVEAU) -->
+                        <!--
                         <li>
                             <a href="/assignments" 
                                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('assignments*') ? 'bg-gray-850 text-white' : '' }}">
@@ -186,6 +187,7 @@
                                 <span class="font-medium">Affectations</span>
                             </a>
                         </li>
+                        -->
 
                         <!-- Élèves -->
                         <li>

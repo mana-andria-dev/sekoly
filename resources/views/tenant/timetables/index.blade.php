@@ -112,7 +112,11 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 <span class="px-3 py-1 bg-gray-800 text-gray-300 rounded-full text-sm">
-                                    {{ $timetable->class->name }}
+                                    @if($timetable->class)
+                                        {{ $timetable->class->name }}
+                                    @else
+                                        <span class="text-red-400">Classe supprimée</span>
+                                    @endif
                                 </span>
                                 <span class="text-xs text-gray-500">
                                     {{ $timetable->class->students_count ?? 0 }} élèves

@@ -287,26 +287,26 @@
                             @enderror
                         </div>
                         
-                        <div>
+                        <!-- <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Heures/semaine</label>
                             <input type="number" name="hours_per_week" value="{{ old('hours_per_week', $teacher->hours_per_week) }}"
                                    class="w-full bg-gray-800 border {{ $errors->has('hours_per_week') ? 'border-red-500' : 'border-gray-700' }} rounded-lg px-4 py-3 text-white">
                             @error('hours_per_week')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
-                        </div>
+                        </div> -->
                     </div>
                 </div>
                 
                 <!-- Notes -->
-                <div class="mt-6">
+                <!-- <div class="mt-6">
                     <label class="block text-sm font-medium text-gray-300 mb-2">Notes</label>
                     <textarea name="notes" rows="3"
                               class="w-full bg-gray-800 border {{ $errors->has('notes') ? 'border-red-500' : 'border-gray-700' }} rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent">{{ old('notes', $teacher->notes) }}</textarea>
                     @error('notes')
                     <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                     @enderror
-                </div>
+                </div> -->
             </div>
             
             <!-- Actions -->

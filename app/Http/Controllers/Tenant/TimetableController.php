@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Timetable;
+use App\Models\TimetableSlot;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Teacher;
@@ -91,6 +92,7 @@ class TimetableController extends Controller
         ])->with('success', 'Emploi du temps créé avec succès.');
     }
 
+    /*
     public function show($tenat, Timetable $timetable)
     {
         // Vérifier que le timetable appartient au tenant
@@ -137,6 +139,176 @@ class TimetableController extends Controller
             'totalSlots'
         ));
     }
+    */
+
+    public function show($tenat, Timetable $timetable)
+    {
+        // Vérifier que le timetable appartient au tenant
+        if ($timetable->tenant_id !== app('tenant')->id) {
+            abort(403, 'Accès non autorisé');
+        }
+        
+        $timetable->load([
+            'class', 
+            'academicYear', 
+            'creator',
+            'timetableSlots.subject',
+            'timetableSlots.teacher',
+            'timetableSlots.classroom',
+            'timetableSlots.teacherProfile'
+        ]);
+        
+        // Organiser les créneaux par jour
+        $slotsByDay = $timetable->timetableSlots->groupBy('day_of_week');
+        
+        // Récupérer TOUTES les affectations de la classe
+        $allAssignments = ClassAssignment::where('tenant_id', app('tenant')->id)
+            ->where('class_id', $timetable->class_id)
+            ->where('is_active', true)
+            ->with(['subject', 'teacher'])
+            ->get();
+
+        // Calculer les heures déjà planifiées par assignment_id
+        $plannedHoursByAssignment = $timetable->timetableSlots
+            ->whereNotNull('assignment_id')
+            ->groupBy('assignment_id')
+            ->map(function($slots) {
+                return $slots->sum('duration');
+            });
+
+        // Filtrer les affectations non planifiées et calculer les heures restantes
+        $unassignedAssignments = $allAssignments->map(function($assignment) use ($plannedHoursByAssignment) {
+            $plannedHours = $plannedHoursByAssignment[$assignment->id] ?? 0;
+            $remainingHours = max(0, $assignment->hours_per_week - $plannedHours);
+            
+            return (object)[
+                'id' => $assignment->id,
+                'assignment' => $assignment,
+                'planned_hours' => $plannedHours,
+                'remaining_hours' => $remainingHours,
+                'is_fully_planned' => $plannedHours >= $assignment->hours_per_week,
+                'is_partially_planned' => $plannedHours > 0 && $plannedHours < $assignment->hours_per_week,
+                'is_not_planned' => $plannedHours == 0
+            ];
+        })->filter(function($item) {
+            // Garder seulement les affectations qui ne sont pas complètement planifiées
+            return $item->remaining_hours > 0;
+        })->values();
+
+        // Vérifier les conflits
+        $conflicts = $timetable->checkConflicts();
+        
+        // Organiser les conflits par jour et par heure pour faciliter l'affichage
+        $conflictsByDayAndTime = collect();
+        
+        if ($conflicts->isNotEmpty()) {
+            foreach ($conflicts as $conflict) {
+                $day = $conflict->day_of_week;
+                $startTime = $conflict->start_time->format('H:i');
+                $endTime = $conflict->end_time->format('H:i');
+                
+                // Créer une clé unique pour le jour et l'heure
+                $key = $day . '_' . $startTime;
+                
+                if (!$conflictsByDayAndTime->has($key)) {
+                    $conflictsByDayAndTime->put($key, (object)[
+                        'day' => $day,
+                        'start_time' => $startTime,
+                        'end_time' => $endTime,
+                        'conflicting_slots' => collect(),
+                        'conflict_details' => $conflict->conflict_details ?? ''
+                    ]);
+                }
+                
+                // Ajouter les deux slots du conflit
+                if ($conflict->slot1) {
+                    $conflictsByDayAndTime[$key]->conflicting_slots->push((object)[
+                        'slot_id' => $conflict->slot1->id,
+                        'subject' => $conflict->slot1->subject->name ?? 'Inconnu',
+                        'subject_code' => $conflict->slot1->subject->code ?? 'N/A',
+                        'teacher' => $conflict->slot1->teacherProfile->full_name ?? 
+                                     $conflict->slot1->teacher->name ?? 'Non assigné',
+                        'classroom' => $conflict->slot1->classroom->code ?? null,
+                        'color' => $conflict->slot1->color ?? '#EF4444'
+                    ]);
+                }
+                
+                if ($conflict->slot2) {
+                    $conflictsByDayAndTime[$key]->conflicting_slots->push((object)[
+                        'slot_id' => $conflict->slot2->id,
+                        'subject' => $conflict->slot2->subject->name ?? 'Inconnu',
+                        'subject_code' => $conflict->slot2->subject->code ?? 'N/A',
+                        'teacher' => $conflict->slot2->teacherProfile->full_name ?? 
+                                     $conflict->slot2->teacher->name ?? 'Non assigné',
+                        'classroom' => $conflict->slot2->classroom->code ?? null,
+                        'color' => $conflict->slot2->color ?? '#EF4444'
+                    ]);
+                }
+            }
+        }      
+        
+        // Calculer les statistiques BASÉES SUR LES TIMETABLESLOTS
+        // Calculer les heures par matière depuis les slots
+        $subjectHours = $timetable->timetableSlots
+            ->whereNotNull('subject_id')
+            ->groupBy('subject_id')
+            ->map(function($slots) {
+                $firstSlot = $slots->first();
+                return (object)[
+                    'subject_id' => $firstSlot->subject_id,
+                    'name' => $firstSlot->subject->name ?? 'Inconnu',
+                    'code' => $firstSlot->subject->code ?? 'N/A',
+                    'color' => $firstSlot->subject->color ?? '#3B82F6',
+                    'total_hours' => $slots->sum('duration'),
+                    'slot_count' => $slots->count()
+                ];
+            })
+            ->sortByDesc('total_hours')
+            ->values();
+        
+        // Total heures depuis les slots
+        $totalHours = $timetable->timetableSlots->sum('duration');
+        $totalSlots = $timetable->timetableSlots->count();
+        
+        // Calculer les heures par professeur basées sur TimetableSlot
+        $teacherHours = $timetable->timetableSlots
+            ->filter(function($slot) {
+                return $slot->teacher_id !== null;
+            })
+            ->groupBy('teacher_id')
+            ->map(function($slots, $teacherId) {
+                $firstSlot = $slots->first();
+                $totalHours = $slots->sum('duration');
+                
+                return (object)[
+                    'teacher_id' => $teacherId,
+                    'teacher_name' => $firstSlot->teacher->name ?? 'Non assigné',
+                    'teacher_profile' => $firstSlot->teacherProfile ?? null,
+                    'total_hours' => $totalHours,
+                    'slot_count' => $slots->count(),
+                    'slots' => $slots
+                ];
+            })
+            ->sortByDesc('total_hours')
+            ->values();
+
+        $startHour = 7; // 7h du matin
+        $endHour = 18;  // 18h (6h du soir)
+        
+        return view('tenant.timetables.show', compact(
+            'timetable', 
+            'slotsByDay', 
+            'unassignedAssignments',
+            'conflicts',
+            'conflictsByDayAndTime',
+            'subjectHours',
+            'totalHours',
+            'totalSlots',
+            'teacherHours',
+            'startHour',   // <-- Ajouté
+            'endHour'      // <-- Ajouté
+        ));
+    }  
 
     public function edit($tenat, Timetable $timetable)
     {
@@ -189,6 +361,31 @@ class TimetableController extends Controller
         return redirect()->route('timetables.index', ['tenant' => app('tenant')->name])
             ->with('success', 'Emploi du temps archivé.');
     }
+
+    public function destroySlot($tenant, $id)
+    {
+        try {
+            // Récupérer le tenant actuel
+            $tenant = app('tenant');
+            
+            // Trouver le slot avec vérification du tenant
+            $slot = TimetableSlot::where('tenant_id', $tenant->id)
+                                ->findOrFail($id);
+            
+            // Vérifier s'il y a des dépendances avant suppression
+            // (ajoutez vos propres vérifications ici)
+            
+            $slot->delete();
+            
+            return back()->with('success', 'Créneau horaire supprimé avec succès');
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return back()->with('error', 'Créneau horaire non trouvé' . $e->getMessage());
+            
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur lors de la suppression : ' . $e->getMessage());
+        }
+    }    
 
     public function manageSlots($tenat, Timetable $timetable)
     {
@@ -260,9 +457,9 @@ class TimetableController extends Controller
             })
             ->exists();
 
-        if ($conflict) {
-            return back()->with('error', 'Conflit d\'horaire détecté.');
-        }
+        // if ($conflict) {
+        //     return back()->with('error', 'Conflit d\'horaire détecté.');
+        // }
 
         $validated['tenant_id'] = app('tenant')->id;
         $slot = $timetable->timetableSlots()->create($validated);

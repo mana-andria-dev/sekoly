@@ -22,12 +22,13 @@
                    class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     Retour
                 </a>
-                
+                <!-- 
                 <a href="{{ route('timetables.generate-from-assignments', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
                    onclick="return confirm('Générer automatiquement les créneaux à partir des affectations ? Cela écrasera les créneaux existants.')"
                    class="px-4 py-2.5 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     Générer automatiquement
                 </a>
+                 -->
             </div>
         </div>
     </div>
@@ -44,6 +45,7 @@
                     
                     <div class="space-y-4">
                         <!-- Affectation (optionnel) -->
+                        <!-- 
                         <div>
                             <label class="block text-sm font-medium text-gray-400 mb-2">Basé sur une affectation</label>
                             <select name="assignment_id"
@@ -59,6 +61,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        -->
                         
                         <!-- Jour de la semaine -->
                         <div>
@@ -117,7 +120,7 @@
                             </select>
                         </div>
                         
-                        <!-- Salle -->
+                        <!-- Salle 
                         <div>
                             <label class="block text-sm font-medium text-gray-400 mb-2">Salle</label>
                             <select name="classroom_id"
@@ -128,6 +131,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        -->
                         
                         <!-- Couleur -->
                         <div>
@@ -314,82 +318,103 @@
                 </div>
             </div>
             
-            <!-- Emploi du temps visuel -->
-            <div class="mt-6 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-                <div class="p-6 border-b border-gray-800">
-                    <h3 class="text-lg font-semibold text-white">Vue hebdomadaire</h3>
-                </div>
-                
-                <div class="p-6">
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-gray-850">
-                                <tr>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider min-w-20">
-                                        Heure
-                                    </th>
-                                    @foreach(['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] as $dayIndex => $dayName)
-                                    @php
-                                        $dayNumber = $dayIndex + 1;
-                                        $daySlots = $timetable->timetableSlots->where('day_of_week', $dayNumber);
-                                    @endphp
-                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-400 uppercase tracking-wider min-w-32">
-                                        <div>{{ $dayName }}</div>
-                                        <div class="text-xs text-gray-500">{{ $daySlots->count() }} créneaux</div>
-                                    </th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-800">
-                                @php
-                                    $timeSlots = [
-                                        ['08:00', '09:30'],
-                                        ['09:45', '11:15'],
-                                        ['11:30', '13:00'],
-                                        ['14:00', '15:30'],
-                                        ['15:45', '17:15'],
-                                        ['17:30', '19:00']
-                                    ];
-                                @endphp
+<div class="mt-6 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+    <div class="p-6 border-b border-gray-800">
+        <h3 class="text-lg font-semibold text-white">Vue hebdomadaire</h3>
+    </div>
+    
+    <div class="p-6">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-850">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider min-w-20">
+                            Heure
+                        </th>
+                        @foreach(['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] as $dayIndex => $dayName)
+                        @php
+                            $dayNumber = $dayIndex + 1;
+                            $daySlots = $timetable->timetableSlots->where('day_of_week', $dayNumber);
+                        @endphp
+                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-400 uppercase tracking-wider min-w-32">
+                            <div>{{ $dayName }}</div>
+                            <div class="text-xs text-gray-500">{{ $daySlots->count() }} créneaux</div>
+                        </th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800">
+                    <!-- Générer les créneaux de 7h à 18h par tranches de 1h -->
+                    @php
+                        $startHour = 7; // 7h du matin
+                        $endHour = 18; // 18h (6h du soir)
+                    @endphp
+                    
+                    @for($hour = $startHour; $hour < $endHour; $hour++)
+                    @php
+                        $startTime = sprintf('%02d:00', $hour);
+                        $endTime = sprintf('%02d:00', $hour + 1);
+                        
+                        // Pour l'affichage formaté
+                        $displayStart = sprintf('%dh', $hour);
+                        $displayEnd = sprintf('%dh', $hour + 1);
+                    @endphp
+                    <tr class="hover:bg-gray-850/30">
+                        <td class="px-3 py-2 bg-gray-850/50">
+                            <div class="text-center">
+                                <div class="text-sm font-medium text-white">{{ $displayStart }} - {{ $displayEnd }}</div>
+                            </div>
+                        </td>
+                        
+                        @for($day = 1; $day <= 5; $day++)
+                        @php
+                            $daySlots = $timetable->timetableSlots->where('day_of_week', $day);
+                            
+                            // Trouver les créneaux qui se superposent avec cette tranche horaire
+                            $matchingSlots = $daySlots->filter(function($slot) use ($startTime, $endTime) {
+                                $slotStart = $slot->start_time->format('H:i');
+                                $slotEnd = $slot->end_time->format('H:i');
                                 
-                                @foreach($timeSlots as $timeSlot)
-                                <tr class="hover:bg-gray-850/30">
-                                    <td class="px-3 py-2 bg-gray-850/50">
-                                        <div class="text-center">
-                                            <div class="text-sm font-medium text-white">{{ $timeSlot[0] }}</div>
-                                            <div class="text-xs text-gray-500">{{ $timeSlot[1] }}</div>
-                                        </div>
-                                    </td>
-                                    
-                                    @for($day = 1; $day <= 5; $day++)
-                                    @php
-                                        $slot = $timetable->timetableSlots
-                                            ->where('day_of_week', $day)
-                                            ->first(function($s) use ($timeSlot) {
-                                                return $s->start_time->format('H:i') == $timeSlot[0];
-                                            });
-                                    @endphp
-                                    
-                                    <td class="px-3 py-2 border-l border-gray-800 min-h-10">
-                                        @if($slot)
-                                        <div class="p-2 rounded text-xs"
-                                             style="background-color: {{ $slot->color }}20; border-left: 2px solid {{ $slot->color }}">
-                                            <div class="font-medium truncate">{{ $slot->subject->code }}</div>
-                                            <div class="text-gray-300 truncate">{{ $slot->subject->name }}</div>
-                                            @if($slot->teacherProfile)
-                                            <div class="text-gray-400 text-xs truncate">{{ $slot->teacherProfile->first_name }}</div>
-                                            @endif
-                                        </div>
+                                // Vérifier si le créneau se superpose avec la tranche horaire
+                                return ($slotStart < $endTime && $slotEnd > $startTime);
+                            });
+                        @endphp
+                        
+                        <td class="px-3 py-2 border-l border-gray-800 min-h-12">
+                            @if($matchingSlots->isNotEmpty())
+                                <!-- Afficher tous les créneaux qui se superposent avec cette tranche -->
+                                <div class="space-y-1">
+                                    @foreach($matchingSlots as $slot)
+                                    <div class="p-1.5 rounded text-xs cursor-pointer hover:opacity-90 transition-opacity"
+                                         style="background-color: {{ $slot->color }}20; border-left: 2px solid {{ $slot->color }}"
+                                         title="{{ $slot->subject->name }} - {{ optional($slot->teacherProfile)->full_name ?? 'Professeur non défini' }}">
+
+                                        
+                                        <div class="font-medium truncate text-white">{{ $slot->subject->code }}</div>
+                                        <div class="text-gray-300 truncate">{{ $slot->subject->name }}</div>
+                                        @if($slot->teacherProfile)
+                                        <div class="text-gray-400 text-xs truncate">{{ $slot->teacherProfile->first_name }}</div>
+                                        @elseif($slot->teacher)
+                                        <div class="text-gray-400 text-xs truncate">{{ $slot->teacher->name }}</div>
                                         @endif
-                                    </td>
-                                    @endfor
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+                                        
+                                    </div>
+                                    @endforeach
+                                </div>
+                            @else
+                            <div class="text-center py-2">
+                                <span class="text-gray-600 text-xs">—</span>
+                            </div>
+                            @endif
+                        </td>
+                        @endfor
+                    </tr>
+                    @endfor
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
         </div>
     </div>
 </div>

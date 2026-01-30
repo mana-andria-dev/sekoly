@@ -30,13 +30,10 @@
                     Imprimer
                 </button>
                 
-                @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('director'))
                 <a href="{{ route('timetables.manage-slots', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
                    class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     Gérer les créneaux
                 </a>
-                @endif
-                @else
                 <a href="{{ route('timetables.create', ['tenant' => app('tenant')->name]) }}?class_id={{ $class->id }}"
                    class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     Créer un emploi du temps
@@ -396,14 +393,12 @@
                         📄 Imprimer l'emploi du temps
                     </button>
                     
-                    @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('director'))
                     <a href="{{ route('timetables.show', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
                        class="block w-full text-center px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                         Gérer l'emploi du temps
                     </a>
-                    @endif
                     
-                    <a href="{{ route('classes.show', ['tenant' => app('tenant')->name, 'class' => $class->id]) }}"
+                    <a href="{{ route('classes.show', ['tenant' => app('tenant')->name, 'schoolClass' => $class->id]) }}"
                        class="block w-full text-center px-4 py-2.5 bg-primary-600/10 hover:bg-primary-600/20 text-primary-400 rounded-lg text-sm font-medium transition-all duration-200">
                         Retour à la fiche de la classe
                     </a>

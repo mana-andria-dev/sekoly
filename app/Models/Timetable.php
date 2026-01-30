@@ -119,11 +119,11 @@ class Timetable extends Model
      */
     public function checkConflicts()
     {
-        $conflicts = [];
+        $conflicts = collect(); // Retourner une collection
         
         // Récupérer tous les créneaux groupés par jour
         $slots = $this->timetableSlots()
-            ->with(['subject', 'teacher', 'teacherProfile'])
+            ->with(['subject', 'teacher', 'teacherProfile', 'classroom'])
             ->orderBy('day_of_week')
             ->orderBy('start_time')
             ->get();
@@ -133,47 +133,109 @@ class Timetable extends Model
         // Vérifier les conflits par jour
         foreach ($groupedSlots as $day => $daySlots) {
             $daySlots = $daySlots->sortBy('start_time');
-            $previousSlot = null;
             
-            foreach ($daySlots as $slot) {
-                // Vérifier les chevauchements avec le créneau précédent
-                if ($previousSlot) {
-                    $previousEnd = strtotime($previousSlot->end_time);
-                    $currentStart = strtotime($slot->start_time);
+            // Vérifier les chevauchements temporels
+            for ($i = 0; $i < count($daySlots); $i++) {
+                for ($j = $i + 1; $j < count($daySlots); $j++) {
+                    $slot1 = $daySlots[$i];
+                    $slot2 = $daySlots[$j];
                     
-                    if ($currentStart < $previousEnd) {
-                        $conflicts[] = [
-                            'day' => $day,
-                            'slot1' => $previousSlot,
-                            'slot2' => $slot,
-                            'type' => 'overlap'
-                        ];
-                    }
-                }
-                
-                // Vérifier si un professeur a deux cours en même temps
-                if ($slot->teacher_id) {
-                    $sameTimeSlots = $daySlots->where('start_time', $slot->start_time)
-                        ->where('teacher_id', $slot->teacher_id)
-                        ->where('id', '!=', $slot->id);
-                    
-                    if ($sameTimeSlots->count() > 0) {
-                        foreach ($sameTimeSlots as $conflictSlot) {
-                            $conflicts[] = [
-                                'day' => $day,
-                                'slot1' => $slot,
-                                'slot2' => $conflictSlot,
-                                'type' => 'teacher_conflict'
-                            ];
+                    // Si les créneaux se chevauchent
+                    if ($this->slotsOverlap($slot1, $slot2)) {
+                        // Vérifier les différents types de conflits
+                        $conflictTypes = $this->detectConflictTypes($slot1, $slot2);
+                        
+                        foreach ($conflictTypes as $type) {
+                            $conflicts->push((object)[
+                                'day_of_week' => $day,
+                                'start_time' => $slot1->start_time,
+                                'end_time' => $slot1->end_time,
+                                'slot1' => $slot1,
+                                'slot2' => $slot2,
+                                'type' => $type,
+                                'conflict_details' => $this->getConflictDetails($slot1, $slot2, $type)
+                            ]);
                         }
                     }
                 }
-                
-                $previousSlot = $slot;
             }
         }
         
-        return collect($conflicts)->unique();
+        return $conflicts->unique();
+    }
+
+    /**
+     * Vérifier si deux créneaux se chevauchent
+     */
+    private function slotsOverlap($slot1, $slot2)
+    {
+        $start1 = strtotime($slot1->start_time);
+        $end1 = strtotime($slot1->end_time);
+        $start2 = strtotime($slot2->start_time);
+        $end2 = strtotime($slot2->end_time);
+        
+        return ($start1 < $end2 && $end1 > $start2);
+    }
+
+    /**
+     * Détecter les types de conflits entre deux créneaux
+     */
+    private function detectConflictTypes($slot1, $slot2)
+    {
+        $types = [];
+        
+        // Conflit de professeur
+        if ($slot1->teacher_id && $slot2->teacher_id && 
+            $slot1->teacher_id == $slot2->teacher_id) {
+            $types[] = 'teacher_conflict';
+        }
+        
+        // Conflit de professeur profile
+        if ($slot1->teacher_profile_id && $slot2->teacher_profile_id && 
+            $slot1->teacher_profile_id == $slot2->teacher_profile_id) {
+            $types[] = 'teacher_profile_conflict';
+        }
+        
+        // Conflit de salle de classe
+        if ($slot1->classroom_id && $slot2->classroom_id && 
+            $slot1->classroom_id == $slot2->classroom_id) {
+            $types[] = 'classroom_conflict';
+        }
+        
+        // Si pas de conflit spécifique, marquer comme chevauchement général
+        if (empty($types)) {
+            $types[] = 'time_overlap';
+        }
+        
+        return $types;
+    }
+
+    /**
+     * Obtenir les détails du conflit
+     */
+    private function getConflictDetails($slot1, $slot2, $type)
+    {
+        switch ($type) {
+            case 'teacher_conflict':
+                return "Le professeur {$slot1->teacher->name} a deux cours en même temps";
+                
+            case 'teacher_profile_conflict':
+                $teacherName = $slot1->teacherProfile ? 
+                    $slot1->teacherProfile->first_name . ' ' . $slot1->teacherProfile->last_name : 
+                    'Professeur inconnu';
+                return "Le professeur $teacherName a deux cours en même temps";
+                
+            case 'classroom_conflict':
+                $classroom1 = $slot1->classroom ? $slot1->classroom->code : 'Salle inconnue';
+                $classroom2 = $slot2->classroom ? $slot2->classroom->code : 'Salle inconnue';
+                return "La salle $classroom1 est utilisée pour deux cours en même temps";
+                
+            case 'time_overlap':
+            default:
+                $subject1 = $slot1->subject ? $slot1->subject->name : 'Matière inconnue';
+                $subject2 = $slot2->subject ? $slot2->subject->name : 'Matière inconnue';
+                return "Deux créneaux se chevauchent: $subject1 et $subject2";
+        }
     }
 
     /**
