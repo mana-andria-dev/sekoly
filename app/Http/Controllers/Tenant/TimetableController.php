@@ -13,6 +13,7 @@ use App\Models\SchoolYear;
 use App\Models\ClassAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TimetableController extends Controller
 {
@@ -537,7 +538,7 @@ class TimetableController extends Controller
         ])->with('success', "{$slotsCreated} créneaux générés à partir des affectations.");
     }
 
-    public function checkConflicts($tenat, Timetable $timetable)
+    public function checkConflicts($tenant, Timetable $timetable)
     {
         // Vérifier que le timetable appartient au tenant
         if ($timetable->tenant_id !== app('tenant')->id) {
@@ -546,27 +547,111 @@ class TimetableController extends Controller
         
         $conflicts = $timetable->checkConflicts();
         
-        return view('tenant.timetables.conflicts', compact('timetable', 'conflicts'));
+        // Calculer les statistiques pour la vue
+        $teacherConflictsCount = $conflicts->where('type', 'teacher_conflict')->count();
+        $overlapConflictsCount = $conflicts->where('type', 'time_overlap')->count();
+        $classroomConflictsCount = $conflicts->where('type', 'classroom_conflict')->count();
+        $teacherProfileConflictsCount = $conflicts->where('type', 'teacher_profile_conflict')->count();
+        
+        return view('tenant.timetables.conflicts', compact(
+            'timetable', 
+            'conflicts',
+            'teacherConflictsCount',
+            'overlapConflictsCount',
+            'classroomConflictsCount',
+            'teacherProfileConflictsCount'
+        ));
     }
 
-    public function print($tenat, Timetable $timetable)
+    public function print($tenant, Timetable $timetable)
     {
-        // Vérifier que le timetable appartient au tenant
+        // Vérification de l'autorisation
         if ($timetable->tenant_id !== app('tenant')->id) {
             abort(403, 'Accès non autorisé');
         }
         
+        // Charger les relations nécessaires
         $timetable->load([
-            'class',
+            'class', 
+            'academicYear', 
             'timetableSlots.subject',
             'timetableSlots.teacher',
             'timetableSlots.classroom',
             'timetableSlots.teacherProfile'
         ]);
         
+        // Organiser les créneaux par jour
         $slotsByDay = $timetable->timetableSlots->groupBy('day_of_week');
         
-        return view('tenant.timetables.print', compact('timetable', 'slotsByDay'));
+        $startHour = 7;
+        $endHour = 18;
+        
+        // Récupérer le paramètre de style (optionnel)
+        $style = request()->get('style', 'simple'); // 'simple' ou 'detailed'
+        
+        // Générer le PDF
+        if ($style === 'simple') {
+            $pdf = Pdf::loadView('tenant.timetables.print-simple', compact(
+                'timetable', 
+                'slotsByDay',
+                'startHour',
+                'endHour'
+            ));
+        } else {
+            // Version détaillée avec statistiques
+            $totalSlots = $timetable->timetableSlots->count();
+            $subjectHours = $timetable->timetableSlots
+                ->whereNotNull('subject_id')
+                ->groupBy('subject_id')
+                ->map(function($slots) {
+                    $firstSlot = $slots->first();
+                    return (object)[
+                        'subject_id' => $firstSlot->subject_id,
+                        'name' => $firstSlot->subject->name ?? 'Inconnu',
+                        'code' => $firstSlot->subject->code ?? 'N/A',
+                        'color' => $firstSlot->subject->color ?? '#3B82F6',
+                        'total_hours' => $slots->sum('duration'),
+                        'slot_count' => $slots->count()
+                    ];
+                })
+                ->sortByDesc('total_hours')
+                ->values();
+            
+            $teacherHours = $timetable->timetableSlots
+                ->filter(function($slot) {
+                    return $slot->teacher_id !== null;
+                })
+                ->groupBy('teacher_id')
+                ->map(function($slots, $teacherId) {
+                    $firstSlot = $slots->first();
+                    return (object)[
+                        'teacher_id' => $teacherId,
+                        'teacher_name' => $firstSlot->teacher->name ?? 'Non assigné',
+                        'total_hours' => $slots->sum('duration'),
+                        'slot_count' => $slots->count()
+                    ];
+                })
+                ->sortByDesc('total_hours')
+                ->values();
+            
+            $pdf = Pdf::loadView('tenant.timetables.print-detailed', compact(
+                'timetable', 
+                'slotsByDay', 
+                'totalSlots', 
+                'subjectHours', 
+                'teacherHours',
+                'startHour',
+                'endHour'
+            ));
+        }
+        
+        // Configuration du PDF
+        $pdf->setPaper('A4', 'landscape');
+        $pdf->setOption('defaultFont', 'DejaVu Sans');
+        $pdf->setOption('isRemoteEnabled', true);
+        
+        // Télécharger le PDF
+        return $pdf->download('emploi_du_temps_' . $timetable->name . '.pdf');
     }
 
     public function duplicate($tenat, Timetable $timetable)

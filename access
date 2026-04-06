@@ -1,0 +1,31 @@
+/opt/lampp/bin/php artisan tinker
+
+
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+User::create([
+    'name' => 'Admin',
+    'first_name' => 'Admin',
+    'last_name' => 'Admin',
+    'email' => 'mana@khaleej-group.com',
+    'password' => Hash::make('admin2026ecole'),
+    'role' => 'admin',
+]);
+
+
+/opt/lampp/bin/php artisan make:migration create_lessons_table
+/opt/lampp/bin/php artisan make:migration create_homeworks_table
+/opt/lampp/bin/php artisan make:migration create_exams_table
+/opt/lampp/bin/php artisan make:migration create_grades_table
+/opt/lampp/bin/php artisan make:migration add_deleted_at_to_homework_submissions_table
+/opt/lampp/bin/php artisan make:migration add_deleted_at_to_exam_results_table
+/opt/lampp/bin/php artisan make:migration create_grades_table
+/opt/lampp/bin/php artisan make:migration create_report_cards_table
+/opt/lampp/bin/php artisan make:migration add_missing_columns_to_grades_table
+/opt/lampp/bin/php artisan make:migration update_report_cards_table
+/opt/lampp/bin/php artisan make:migration fix_report_cards_foreign_key
+/opt/lampp/bin/php artisan make:migration add_period_to_exams_table
+/opt/lampp/bin/php artisan migrate
+
+

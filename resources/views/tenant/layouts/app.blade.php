@@ -209,7 +209,67 @@
                                 </div>
                                 <span class="font-medium">Emploi du temps</span>
                             </a>
-                        </li>                        
+                        </li>                         
+
+                        <!-- Pédagogie -->
+                        <li class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                            Pédagogie
+                        </li>
+
+                        <!-- Leçons -->
+                        <li>
+                            <a href="{{ route('lessons.index', app('tenant')->name) }}" 
+                               class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('lessons*') ? 'bg-gray-850 text-white' : '' }}">
+                                <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
+                                    <span class="text-lg">📖</span>
+                                </div>
+                                <span class="font-medium">Leçons</span>
+                            </a>
+                        </li>
+
+                        <!-- Devoirs -->
+                        <li>
+                            <a href="{{ route('homeworks.index', app('tenant')->name) }}" 
+                               class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('homeworks*') ? 'bg-gray-850 text-white' : '' }}">
+                                <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
+                                    <span class="text-lg">📝</span>
+                                </div>
+                                <span class="font-medium">Devoirs</span>
+                            </a>
+                        </li>
+
+                        <!-- Examens -->
+                        <li>
+                            <a href="{{ route('exams.index', app('tenant')->name) }}" 
+                               class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('exams*') ? 'bg-gray-850 text-white' : '' }}">
+                                <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
+                                    <span class="text-lg">📋</span>
+                                </div>
+                                <span class="font-medium">Examens</span>
+                            </a>
+                        </li>
+
+                        <!-- Notes -->
+                        <!-- <li>
+                            <a href="{{ route('grades.index', app('tenant')->name) }}" 
+                               class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('grades*') ? 'bg-gray-850 text-white' : '' }}">
+                                <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
+                                    <span class="text-lg">⭐</span>
+                                </div>
+                                <span class="font-medium">Notes</span>
+                            </a>
+                        </li> -->
+
+                        <!-- Bulletins -->
+                        <li>
+                            <a href="{{ route('report-cards.index', app('tenant')->name) }}" 
+                               class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('report-cards*') ? 'bg-gray-850 text-white' : '' }}">
+                                <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
+                                    <span class="text-lg">📊</span>
+                                </div>
+                                <span class="font-medium">Bulletins</span>
+                            </a>
+                        </li>                                         
 
                         <li>
                             <a href="/users" 

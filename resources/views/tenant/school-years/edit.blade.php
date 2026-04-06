@@ -1,4 +1,4 @@
-{{-- resources/views/tenant/school-years/create.blade.php --}}
+{{-- resources/views/tenant/school-years/edit.blade.php --}}
 @extends('tenant.layouts.app')
 
 @section('content')
@@ -7,8 +7,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-white">Nouvelle année scolaire</h1>
-                <p class="text-gray-400 text-sm mt-1">Créez une nouvelle année scolaire avec ses périodes</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">Modifier l'année scolaire</h1>
+                <p class="text-gray-400 text-sm mt-1">{{ $schoolYear->name }}</p>
             </div>
             <a href="{{ route('school-years.index', app('tenant')->name) }}"
                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
@@ -41,8 +41,9 @@
     @endif
 
     <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <form action="{{ route('school-years.store', app('tenant')->name) }}" method="POST">
+        <form action="{{ route('school-years.update', [app('tenant')->name, $schoolYear->id]) }}" method="POST">
             @csrf
+            @method('PUT')
 
             <div class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -50,7 +51,7 @@
                         <label class="block text-sm font-medium text-gray-300 mb-2">Nom de l'année scolaire *</label>
                         <input type="text" 
                                name="name" 
-                               value="{{ old('name') }}"
+                               value="{{ old('name', $schoolYear->name) }}"
                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                                placeholder="2025-2026"
                                required>
@@ -65,7 +66,7 @@
                         <select name="period_type_id" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary-600" required>
                             <option value="">Sélectionner un type</option>
                             @foreach($periodTypes as $type)
-                                <option value="{{ $type->id }}" {{ old('period_type_id') == $type->id ? 'selected' : '' }}>
+                                <option value="{{ $type->id }}" {{ old('period_type_id', $schoolYear->period_type_id) == $type->id ? 'selected' : '' }}>
                                     {{ $type->name }} ({{ $type->period_count }} périodes)
                                 </option>
                             @endforeach
@@ -76,11 +77,20 @@
                     </div>
                 </div>
 
-                <!-- Aperçu des périodes -->
-                <div class="bg-gray-800/50 rounded-lg p-4">
-                    <h3 class="text-sm font-medium text-gray-300 mb-3">Aperçu des périodes</h3>
-                    <div id="periods-preview" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                        <div class="text-gray-500 text-sm">Sélectionnez un type de période pour voir l'aperçu</div>
+                <div class="flex items-center gap-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Date de début</label>
+                        <input type="date" 
+                               name="start_date" 
+                               value="{{ old('start_date', $schoolYear->start_date ? $schoolYear->start_date->format('Y-m-d') : '') }}"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary-600">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Date de fin</label>
+                        <input type="date" 
+                               name="end_date" 
+                               value="{{ old('end_date', $schoolYear->end_date ? $schoolYear->end_date->format('Y-m-d') : '') }}"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary-600">
                     </div>
                 </div>
 
@@ -92,9 +102,8 @@
                         <div>
                             <h3 class="text-sm font-medium text-yellow-400">Information</h3>
                             <p class="text-xs text-yellow-300 mt-1">
-                                L'année scolaire débutera le 1er septembre et se terminera le 31 juillet.
-                                Les périodes seront créées automatiquement selon le type sélectionné.
-                                L'année créée deviendra automatiquement l'année active.
+                                La modification des dates peut affecter le calcul des périodes.
+                                Assurez-vous que les dates sont cohérentes avec l'année scolaire.
                             </p>
                         </div>
                     </div>
@@ -107,69 +116,11 @@
                     </a>
                     <button type="submit"
                             class="px-6 py-3 bg-primary-600 hover:bg-primary-700 rounded-lg font-medium text-white transition-colors">
-                        Créer l'année scolaire
+                        Mettre à jour
                     </button>
                 </div>
             </div>
         </form>
     </div>
 </div>
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const periodTypeSelect = document.querySelector('select[name="period_type_id"]');
-    const periodsPreview = document.getElementById('periods-preview');
-    
-    const periodNames = {
-        1: ['1er Trimestre', '2ème Trimestre', '3ème Trimestre'],
-        2: ['1er Semestre', '2ème Semestre'],
-        3: ['Période 1', 'Période 2', 'Période 3', 'Période 4']
-    };
-    
-    function updatePreview(periodCount, typeName) {
-        let periods = [];
-        
-        if (typeName && typeName.toLowerCase().includes('trimestre')) {
-            periods = ['1er Trimestre', '2ème Trimestre', '3ème Trimestre'];
-        } else if (typeName && typeName.toLowerCase().includes('semestre')) {
-            periods = ['1er Semestre', '2ème Semestre'];
-        } else {
-            for (let i = 1; i <= periodCount; i++) {
-                periods.push(`Période ${i}`);
-            }
-        }
-        
-        if (periods.length === 0) {
-            periodsPreview.innerHTML = '<div class="text-gray-500 text-sm">Sélectionnez un type de période pour voir l\'aperçu</div>';
-            return;
-        }
-        
-        let html = '';
-        periods.forEach((period, index) => {
-            html += `
-                <div class="flex items-center gap-2 text-sm">
-                    <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <span class="text-gray-300">${period}</span>
-                </div>
-            `;
-        });
-        
-        periodsPreview.innerHTML = html;
-    }
-    
-    periodTypeSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const periodCount = selectedOption.text.match(/\d+/);
-        const typeName = selectedOption.text;
-        
-        if (periodCount) {
-            updatePreview(parseInt(periodCount[0]), typeName);
-        }
-    });
-});
-</script>
-@endpush
 @endsection

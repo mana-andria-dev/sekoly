@@ -13,7 +13,7 @@ class SchoolClass extends Model
         'tenant_id', 
         'school_year_id', 
         'name'
-    ];
+    ];    
 
     // Ajoutez cette méthode
     public function scopeForTenant($query, $tenantId = null)
@@ -61,10 +61,18 @@ class SchoolClass extends Model
         return $this->hasMany(StudentEnrollment::class, 'class_id');
     }
 
+    // public function students()
+    // {
+    //     return $this->belongsToMany(User::class, 'student_enrollments', 'class_id', 'student_id')
+    //                 ->where('users.role', 'student')
+    //                 ->withTimestamps();
+    // }
+
     public function students()
     {
         return $this->belongsToMany(User::class, 'student_enrollments', 'class_id', 'student_id')
-                    ->where('users.role', 'student')
+                    ->where('role', 'student')
+                    ->wherePivot('deleted_at', null)
                     ->withTimestamps();
-    }
+    }    
 }

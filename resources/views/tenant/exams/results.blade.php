@@ -1,0 +1,122 @@
+{{-- resources/views/tenant/exams/results.blade.php --}}
+@extends('tenant.layouts.app')
+
+@section('content')
+
+<div class="mx-auto animate-fade-in">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">Résultats - {{ $exam->title }}</h1>
+                <p class="text-gray-400 text-sm mt-1">Saisie des notes et résultats d'examen</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('exams.show', [app('tenant')->name, $exam->id]) }}"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Retour
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if(session('success'))
+    <div class="mb-6 p-4 bg-green-900/50 border border-green-700 rounded-xl text-green-400">
+        {{ session('success') }}
+    </div>
+    @endif
+
+    @if($errors->any())
+    <div class="mb-6">
+        <div class="bg-red-900/50 border border-red-700 rounded-xl p-4">
+            <div class="flex items-center gap-3">
+                <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+                <div>
+                    <h3 class="text-sm font-medium text-red-300">Veuillez corriger les erreurs suivantes :</h3>
+                    <ul class="mt-2 text-sm text-red-400 list-disc list-inside">
+                        @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <form action="{{ route('exams.results.store', [app('tenant')->name, $exam->id]) }}" method="POST">
+            @csrf
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-800">
+                    <thead class="bg-gray-850">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Élève</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Note (sur {{ $exam->max_score }})</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Appréciation / Commentaire</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800">
+                        @php
+                            $students = $exam->class->students ?? [];
+                        @endphp
+                        @forelse($students as $index => $student)
+                            @php
+                                $result = $exam->results->where('student_id', $student->id)->first();
+                            @endphp
+                            <tr class="hover:bg-gray-850">
+                                <td class="px-4 py-3">
+                                    <div class="text-sm text-white">{{ $student->first_name }} {{ $student->last_name }}</div>
+                                    <input type="hidden" name="results[{{ $index }}][student_id]" value="{{ $student->id }}">
+                                </td>
+                                <td class="px-4 py-3">
+                                    <input type="number" 
+                                           name="results[{{ $index }}][score]" 
+                                           value="{{ old("results.{$index}.score", $result->score ?? '') }}"
+                                           step="0.01"
+                                           min="0" 
+                                           max="{{ $exam->max_score }}"
+                                           class="w-32 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                                           placeholder="Note">
+                                    <span class="text-xs text-gray-500 ml-1">/{{ $exam->max_score }}</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <textarea name="results[{{ $index }}][feedback]" 
+                                              rows="2"
+                                              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                                              placeholder="Appréciation...">{{ old("results.{$index}.feedback", $result->feedback ?? '') }}</textarea>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="px-4 py-8 text-center text-gray-400">
+                                    Aucun élève inscrit dans cette classe
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            
+            @if(count($students) > 0)
+            <div class="mt-6 flex items-center justify-end gap-3">
+                <a href="{{ route('exams.show', [app('tenant')->name, $exam->id]) }}"
+                   class="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-white transition-colors">
+                    Annuler
+                </a>
+                <button type="submit"
+                        class="px-6 py-3 bg-primary-600 hover:bg-primary-700 rounded-lg font-medium text-white transition-colors">
+                    Enregistrer les résultats
+                </button>
+            </div>
+            @endif
+        </form>
+    </div>
+</div>
+@endsection

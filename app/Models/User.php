@@ -215,4 +215,15 @@ class User extends Authenticatable
             ->where('status', 'active'); // Optionnel: seulement les actives
     }
 
+    public function enrollments()
+    {
+        return $this->hasMany(StudentEnrollment::class, 'student_id');
+    }
+
+    public function classes()
+    {
+        return $this->belongsToMany(SchoolClass::class, 'student_enrollments', 'student_id', 'class_id')
+                    ->withTimestamps();
+    }
+
 }

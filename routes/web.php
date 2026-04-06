@@ -16,6 +16,11 @@ use App\Http\Controllers\Tenant\TeacherContractController;
 use App\Http\Controllers\Tenant\TeacherEvaluationController;
 use App\Http\Controllers\Tenant\TeacherAvailabilityController;
 use App\Http\Controllers\Tenant\TimetableController;
+use App\Http\Controllers\Tenant\LessonController;
+use App\Http\Controllers\Tenant\HomeworkController;
+use App\Http\Controllers\Tenant\ExamController;
+use App\Http\Controllers\Tenant\GradeController;
+use App\Http\Controllers\Tenant\ReportCardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +53,7 @@ Route::domain('{tenant}.site.test')->middleware(['tenant', 'auth'])->group(funct
 
     Route::resource('users', UserController::class);
     Route::resource('school-years', SchoolYearController::class);
+    Route::patch('school-years/{schoolYear}/activate', [SchoolYearController::class, 'activate'])->name('school-years.activate');
 
     Route::prefix('students')->group(function () {
 
@@ -193,6 +199,37 @@ Route::domain('{tenant}.site.test')->middleware(['tenant', 'auth'])->group(funct
     // Vue par classe
     Route::get('/classes/{class}/timetable', [TimetableController::class, 'classTimetable'])
         ->name('classes.timetable');
+
+    // Leçons
+    Route::resource('lessons', LessonController::class);
+    Route::patch('lessons/{lesson}/status', [LessonController::class, 'updateStatus'])->name('lessons.status');
+    
+    // Devoirs
+    Route::resource('homeworks', HomeworkController::class);
+    Route::post('homeworks/{homework}/submit', [HomeworkController::class, 'submit'])->name('homeworks.submit');
+    Route::post('homeworks/submissions/{submission}/grade', [HomeworkController::class, 'grade'])->name('homeworks.grade');
+    
+    // Examens
+    Route::resource('exams', ExamController::class);
+    Route::post('exams/{exam}/results', [ExamController::class, 'storeResults'])->name('exams.results.store');
+    Route::get('exams/{exam}/results', [ExamController::class, 'results'])->name('exams.results');
+    
+    //Note
+    Route::resource('grades', GradeController::class);
+    Route::get('grades/bulk/{classId}/{subjectId}', [GradeController::class, 'bulkCreate'])->name('grades.bulk.create');
+    Route::post('grades/bulk', [GradeController::class, 'bulkStore'])->name('grades.bulk.store');
+
+    Route::get('classes/{classId}/students', function($classId) {
+        $class = App\Models\SchoolClass::findOrFail($classId);
+        return $class->students()->where('role', 'student')->get(['id', 'first_name', 'last_name']);
+    });    
+    
+    // Bulletins
+    Route::resource('report-cards', ReportCardController::class);
+    Route::post('report-cards/generate', [ReportCardController::class, 'generate'])->name('report-cards.generate');
+    Route::post('report-cards/{reportCard}/publish', [ReportCardController::class, 'publish'])->name('report-cards.publish');
+    Route::get('report-cards/{reportCard}/print', [ReportCardController::class, 'print'])->name('report-cards.print');
+    Route::get('classes/{class}/report-cards/{period?}', [ReportCardController::class, 'classReportCards'])->name('report-cards.class');
 
 });
 

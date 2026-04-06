@@ -66,10 +66,10 @@
                         class="tab-link py-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200 border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-700">
                     Évaluations
                 </button>
-                <button type="button" data-tab="schedule" 
+                <!-- <button type="button" data-tab="schedule" 
                         class="tab-link py-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200 border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-700">
                     Emploi du temps
-                </button>
+                </button> -->
                 <button type="button" data-tab="assignments" 
                         class="tab-link py-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200 border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-700">
                     Affectations <span class="ml-1 px-2 py-0.5 text-xs bg-primary-600/20 text-primary-400 rounded-full">{{ $teacher->assignments->count() }}</span>
@@ -83,6 +83,7 @@
         <!-- Vue d'ensemble -->
         <div id="overview-content" class="tab-content">
             <!-- Statistiques -->
+            <!--
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
                     <div class="text-2xl font-bold text-white">{{ $weeklyWorkload }}h</div>
@@ -97,6 +98,7 @@
                     <div class="text-sm text-gray-400">Ancienneté</div>
                 </div>
             </div>
+            -->
 
             <!-- Informations principales -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
