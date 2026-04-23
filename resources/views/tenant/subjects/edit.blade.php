@@ -23,15 +23,11 @@
                 <div class="text-sm text-gray-500 hidden sm:flex items-center gap-2">
                     <a href="/dashboard" class="hover:text-gray-300 transition-colors">Dashboard</a>
                     <span class="text-gray-600">/</span>
-                    <a href="{{ route('subjects.index', [
-                                    'tenant' => app('tenant')->name
-                                ]) }}" class="hover:text-gray-300 transition-colors">Matières</a>
+                    <a href="{{ route('subjects.index') }}" class="hover:text-gray-300 transition-colors">Matières</a>
                     <span class="text-gray-600">/</span>
                     <span class="text-gray-300">{{ $subject->name }}</span>
                 </div>
-                <a href="{{ route('subjects.index', [
-                            'tenant' => app('tenant')->name
-                        ]) }}"
+                <a href="{{ route('subjects.index') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-850 hover:bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 hover:text-white transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -47,7 +43,6 @@
         <!-- Main Form (2/3 width) -->
         <div class="lg:col-span-2">
             <form action="{{ route('subjects.update', [
-                            'tenant' => app('tenant')->name,
                             'subject' => $subject->id
                         ]) }}" method="POST" class="space-y-6">
                 @csrf
@@ -176,7 +171,8 @@
                         </div>
                         
                         <!-- Hours per week & Coefficient -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1">
+                            {{-- 
                             <div class="animate-slide-in" style="animation-delay: 0.5s">
                                 <div class="flex items-center justify-between mb-2">
                                     <label class="text-sm font-medium text-gray-300 flex items-center gap-2">
@@ -210,6 +206,7 @@
                                     </div>
                                 @enderror
                             </div>
+                            --}}
                             
                             <div class="animate-slide-in" style="animation-delay: 0.6s">
                                 <div class="flex items-center justify-between mb-2">
@@ -274,9 +271,7 @@
                     <div class="px-6 py-5 border-t border-gray-800 bg-gray-900/50">
                         <div class="flex justify-end gap-3">
 
-                            <a href="{{ route('subjects.index', [
-                                    'tenant' => app('tenant')->name,
-                                ]) }}"
+                            <a href="{{ route('subjects.index') }}"
                                class="px-5 py-2.5 border border-gray-700 text-gray-300 hover:text-white hover:bg-gray-850 hover:border-gray-600 rounded-lg font-medium transition-all duration-200">
                                 Annuler
                             </a>
@@ -338,7 +333,6 @@
                 <div class="space-y-3">
                    
                     <a href="{{ route('subjects.show', [
-                            'tenant' => app('tenant')->name,
                             'subject' => $subject->id
                         ]) }} "
                        class="w-full flex items-center justify-center gap-2 p-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-600/20 rounded-lg transition-all duration-200">
@@ -350,7 +344,6 @@
                     </a>
                     
                     <form action="{{ route('subjects.toggle-active', [
-                                    'tenant' => app('tenant')->name,
                                     'subject' => $subject->id
                                 ]) }}" method="POST" class="mb-4">
                         @csrf
@@ -372,7 +365,6 @@
                     </form>
                     
                     <form action="{{ route('subjects.destroy', [
-                                        'tenant' => app('tenant')->name,
                                         'subject' => $subject->id
                                     ]) }}" method="POST">
                         @csrf

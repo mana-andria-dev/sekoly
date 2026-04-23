@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ app('tenant')->name }} | Dashboard</title>
+    <title>{{ tenant()->name }} | Dashboard</title>
     
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -108,10 +108,10 @@
                 <div class="p-6 border-b border-gray-800 flex-shrink-0">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-gradient-to-br from-primary-600 to-info rounded-lg flex items-center justify-center shadow-lg">
-                            <span class="text-white font-bold text-lg">{{ substr(app('tenant')->name, 0, 1) }}</span>
+                            <span class="text-white font-bold text-lg">{{ substr(tenant()->name, 0, 1) }}</span>
                         </div>
                         <div>
-                            <h2 class="text-lg font-bold text-white truncate">{{ app('tenant')->name }}</h2>
+                            <h2 class="text-lg font-bold text-white truncate">{{ tenant()->name }}</h2>
                             <p class="text-xs text-gray-400 mt-1">Tableau de bord</p>
                         </div>
                     </div>
@@ -159,7 +159,7 @@
 
                         <!-- Professeurs (NOUVEAU) -->
                         <li>
-                            <a href="{{ route('teachers.index', ['tenant' => app('tenant')->name]) }}" 
+                            <a href="{{ route('teachers.index', ['tenant' => tenant()->name]) }}" 
                                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('teachers*') ? 'bg-gray-850 text-white' : '' }}">
                                 <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
                                     <span class="text-lg">👨‍🏫</span>
@@ -202,7 +202,7 @@
 
                         <!-- Emploi du temps -->
                         <li>
-                            <a href="{{ route('timetables.index', ['tenant' => app('tenant')->name]) }}" 
+                            <a href="{{ route('timetables.index', ['tenant' => tenant()->name]) }}" 
                                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('timetables*') ? 'bg-gray-850 text-white' : '' }}">
                                 <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
                                     <span class="text-lg">📅</span>
@@ -218,7 +218,7 @@
 
                         <!-- Leçons -->
                         <li>
-                            <a href="{{ route('lessons.index', app('tenant')->name) }}" 
+                            <a href="{{ route('lessons.index', tenant()->name) }}" 
                                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('lessons*') ? 'bg-gray-850 text-white' : '' }}">
                                 <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
                                     <span class="text-lg">📖</span>
@@ -229,7 +229,7 @@
 
                         <!-- Devoirs -->
                         <li>
-                            <a href="{{ route('homeworks.index', app('tenant')->name) }}" 
+                            <a href="{{ route('homeworks.index', tenant()->name) }}" 
                                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('homeworks*') ? 'bg-gray-850 text-white' : '' }}">
                                 <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
                                     <span class="text-lg">📝</span>
@@ -240,7 +240,7 @@
 
                         <!-- Examens -->
                         <li>
-                            <a href="{{ route('exams.index', app('tenant')->name) }}" 
+                            <a href="{{ route('exams.index', tenant()->name) }}" 
                                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('exams*') ? 'bg-gray-850 text-white' : '' }}">
                                 <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
                                     <span class="text-lg">📋</span>
@@ -251,7 +251,7 @@
 
                         <!-- Notes -->
                         <!-- <li>
-                            <a href="{{ route('grades.index', app('tenant')->name) }}" 
+                            <a href="{{ route('grades.index', tenant()->name) }}" 
                                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('grades*') ? 'bg-gray-850 text-white' : '' }}">
                                 <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
                                     <span class="text-lg">⭐</span>
@@ -262,7 +262,7 @@
 
                         <!-- Bulletins -->
                         <li>
-                            <a href="{{ route('report-cards.index', app('tenant')->name) }}" 
+                            <a href="{{ route('report-cards.index', tenant()->name) }}" 
                                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('report-cards*') ? 'bg-gray-850 text-white' : '' }}">
                                 <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
                                     <span class="text-lg">📊</span>

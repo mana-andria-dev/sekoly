@@ -27,9 +27,7 @@
                     <span class="text-gray-600">/</span>
                     <span class="text-gray-300">Modifier</span>
                 </div>
-                <a href="{{ route('classes.index', [
-                            'tenant' => app('tenant')->name
-                        ]) }}"
+                <a href="{{ route('classes.index') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-850 hover:bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 hover:text-white transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -45,8 +43,7 @@
         <!-- Main Form (2/3 width) -->
         <div class="lg:col-span-2">
             <form action="{{ route('classes.update', [
-                                            'tenant' => app('tenant')->name,
-                                            'schoolClass' => $schoolClass->id
+                                            'class' => $schoolClass->id
                                         ]) }}" method="POST" class="space-y-6">
                 @csrf
                 @method('PUT')
@@ -128,9 +125,7 @@
                     <!-- Card Footer -->
                     <div class="px-6 py-5 border-t border-gray-800 bg-gray-900/50">
                         <div class="flex justify-end gap-3">
-                            <a href="{{ route('classes.index', [
-                                    'tenant' => app('tenant')->name
-                                ]) }}"
+                            <a href="{{ route('classes.index') }}"
                                class="px-5 py-2.5 border border-gray-700 text-gray-300 hover:text-white hover:bg-gray-850 hover:border-gray-600 rounded-lg font-medium transition-all duration-200">
                                 Annuler
                             </a>
@@ -182,8 +177,7 @@
                 </h3>
                 <div class="space-y-3">
                     <form action="{{ route('classes.destroy', [
-                            'tenant' => app('tenant')->name,
-                            'schoolClass' => $schoolClass->id
+                            'class' => $schoolClass->id
                         ]) }}" method="POST" class="mb-4">
                         @csrf
                         @method('DELETE')
@@ -197,9 +191,7 @@
                         </button>
                     </form>
                     
-                    <a href="{{ route('classes.index', [
-                            'tenant' => app('tenant')->name
-                        ]) }}"
+                    <a href="{{ route('classes.index') }}"
                        class="flex items-center justify-between p-3 bg-gray-850/50 hover:bg-gray-800 rounded-lg transition-all duration-200 group">
                         <div class="flex items-center gap-3">
                             <div class="p-2 bg-gray-800 group-hover:bg-primary-600/20 rounded-lg transition-colors">

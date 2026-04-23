@@ -2,7 +2,7 @@
     <div class="px-6 py-5 border-b border-gray-800 bg-gradient-to-r from-gray-900 to-gray-850">
         <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold text-white">Contrats du professeur</h2>
-            <a href="{{ route('teachers.contracts.create', ['tenant' => app('tenant')->name, 'teacher' => $teacher->id]) }}"
+            <a href="{{ route('teachers.contracts.create', ['teacher' => $teacher->id]) }}"
                class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -123,7 +123,7 @@
             </div>
             <h3 class="text-lg font-medium text-gray-300 mb-2">Aucun contrat</h3>
             <p class="text-sm text-gray-500 mb-6">Aucun contrat n'a été enregistré pour ce professeur</p>
-            <a href="{{ route('teachers.contracts.create', ['tenant' => app('tenant')->name, 'teacher' => $teacher->id]) }}"
+            <a href="{{ route('teachers.contracts.create', ['teacher' => $teacher->id]) }}"
                class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

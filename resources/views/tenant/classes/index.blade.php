@@ -39,7 +39,7 @@
                 </div>
                 
                 <a href="{{ route('classes.create', [
-                                    'tenant' => app('tenant')->name
+                                    'tenant' => tenant()->name
                                 ]) }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary-600 to-info hover:from-primary-700 hover:to-info/90 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-primary-600/20">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,7 +91,7 @@
                     Filtrer
                 </button>
                 <a href="{{ route('classes.index', [
-                                    'tenant' => app('tenant')->name
+                                    'tenant' => tenant()->name
                                 ]) }}"
                    class="px-4 py-2.5 border border-gray-700 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 hover:border-gray-600 font-medium transition-all">
                     Réinitialiser
@@ -138,11 +138,8 @@
                                     <span class="text-primary-600">🏫</span>
                                 </div>
                                 <div>
-                                    <a href="{{ route('classes.show', [
-                                            'tenant' => app('tenant')->name,
-                                            'schoolClass' => $class->id
-                                        ]) }}" 
-                                       class="font-medium text-white hover:text-primary-400 transition-colors">
+                                    <a href="{{ route('classes.show', $class) }}" 
+                                        class="font-medium text-white hover:text-primary-400 transition-colors">
                                         {{ $class->name }}
                                     </a>
                                     <div class="text-xs text-gray-500 mt-1">ID: {{ $class->id }}</div>
@@ -173,7 +170,7 @@
                                 </span>
                                 @if(($class->students_count ?? 0) > 0)
                                 <a href="{{ route('classes.show', [
-                                            'tenant' => app('tenant')->name,
+                                            'tenant' => tenant()->name,
                                             'schoolClass' => $class->id
                                         ]) }}#students"
                                    class="text-xs text-gray-500 hover:text-gray-300 transition-colors">
@@ -189,7 +186,7 @@
                                 </span>
                                 @if(($class->assignments_count ?? 0) > 0)
                                 <a href="{{ route('classes.show', [
-                                            'tenant' => app('tenant')->name,
+                                            'tenant' => tenant()->name,
                                             'schoolClass' => $class->id
                                         ]) }}#assignments"
                                    class="text-xs text-gray-500 hover:text-gray-300 transition-colors">
@@ -217,20 +214,16 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('classes.show', [
-                                            'tenant' => app('tenant')->name,
-                                            'schoolClass' => $class->id
-                                        ]) }}"
-                                   class="p-2 text-gray-400 hover:text-blue-400 hover:bg-gray-800 rounded-lg transition-colors duration-200"
-                                   title="Voir détails">
+                                <a href="{{ route('classes.show', $class) }}" 
+                                        class="font-medium text-white hover:text-primary-400 transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
                                 </a>
                                 <a href="{{ route('classes.edit', [
-                                            'tenant' => app('tenant')->name,
-                                            'schoolClass' => $class->id
+                                            'tenant' => tenant()->name,
+                                            'class' => $class->id
                                         ]) }}"
                                    class="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors duration-200"
                                    title="Modifier">
@@ -239,8 +232,8 @@
                                     </svg>
                                 </a>
                                 <form action="{{ route('classes.destroy', [
-                                            'tenant' => app('tenant')->name,
-                                            'schoolClass' => $class->id
+                                            'tenant' => tenant()->name,
+                                            'class' => $class->id
                                         ]) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
@@ -272,7 +265,7 @@
                                     @endif
                                 </p>
                                 <a href="{{ route('classes.create', [
-                                            'tenant' => app('tenant')->name,
+                                            'tenant' => tenant()->name,
                                         ]) }}"
                                    class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 rounded-lg text-white font-medium transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

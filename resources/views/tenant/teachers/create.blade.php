@@ -9,7 +9,7 @@
                 <h1 class="text-2xl sm:text-3xl font-bold text-white">Ajouter un professeur</h1>
                 <p class="text-gray-400 text-sm mt-1">Nouvel enseignant dans l'établissement</p>
             </div>
-            <a href="{{ route('teachers.index', ['tenant' => app('tenant')->name]) }}"
+            <a href="{{ route('teachers.index') }}"
                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -43,7 +43,7 @@
     @endif
 
     <!-- Formulaire -->
-    <form action="{{ route('teachers.store', ['tenant' => app('tenant')->name]) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('teachers.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         
         <div class="space-y-6">
@@ -346,7 +346,7 @@
             
             <!-- Actions -->
             <div class="flex items-center justify-between">
-                <a href="{{ route('teachers.index', ['tenant' => app('tenant')->name]) }}"
+                <a href="{{ route('teachers.index') }}"
                    class="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-white transition-colors">
                     Annuler
                 </a>

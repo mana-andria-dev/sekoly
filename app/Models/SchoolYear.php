@@ -9,6 +9,8 @@ class SchoolYear extends Model
 {
     use HasFactory;
 
+    protected $guarded = [];
+    
     protected $fillable = [
         'tenant_id',
         'name',

@@ -64,6 +64,10 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'tenant' => \App\Http\Middleware\IdentifyTenant::class,
+        // 'tenant' => \App\Http\Middleware\IdentifyTenant::class,
+        // 'tenant.auth' => \App\Http\Middleware\TenantAuthentication::class,
+        'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+        'tenant.auth' => \App\Http\Middleware\TenantAuthentication::class,
+        'tenant.db' => \App\Http\Middleware\EnsureTenantDatabaseConnection::class,
     ];
 }

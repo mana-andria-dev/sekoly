@@ -18,18 +18,14 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <a href="{{ route('students.import.form', [
-                                    'tenant' => app('tenant')->name
-                                ]) }}"
+                <a href="{{ route('students.import.form') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg border border-gray-700 transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                     </svg>
                     Importer CSV
                 </a>
-                <a href="{{ route('students.create', [
-                                    'tenant' => app('tenant')->name
-                                ]) }}"
+                <a href="{{ route('students.create') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary-600 to-info hover:from-primary-700 hover:to-info/90 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-primary-600/20">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -86,9 +82,7 @@
                         Filtrer
                     </button>
                     @if(request()->anyFilled(['search', 'class_id', 'status']))
-                    <a href="{{ route('students.index', [
-                                    'tenant' => app('tenant')->name
-                                ]) }}" 
+                    <a href="{{ route('students.index') }}" 
                        class="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:text-white font-medium">
                         Réinitialiser
                     </a>
@@ -244,7 +238,6 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('students.show', [
-                                            'tenant' => app('tenant')->name,
                                             'student' => $student->id
                                         ]) }}" 
                                    class="p-2 text-gray-400 hover:text-blue-400 hover:bg-gray-800 rounded-lg transition-colors"
@@ -255,7 +248,6 @@
                                     </svg>
                                 </a>
                                 <a href="{{ route('students.edit', [
-                                            'tenant' => app('tenant')->name,
                                             'student' => $student->id
                                         ]) }}" 
                                    class="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
@@ -267,7 +259,6 @@
                                 @if($student->is_active)
 
                                 <form action="{{ route('students.deactivate', [
-                                            'tenant' => app('tenant')->name,
                                             'student' => $student->id
                                         ]) }}" 
                                       method="POST"
@@ -284,7 +275,6 @@
                                 </form>
                                 @else
                                 <form action="{{ route('students.activate', [
-                                            'tenant' => app('tenant')->name,
                                             'student' => $student->id
                                         ]) }}" 
                                       method="POST"

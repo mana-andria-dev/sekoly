@@ -33,7 +33,7 @@
                 </div>
                 
                 <a href="{{ route('subjects.create', [
-                            'tenant' => app('tenant')->name
+                            'tenant' => tenant()->name
                         ]) }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary-600 to-info hover:from-primary-700 hover:to-info/90 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-primary-600/20">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,9 +117,11 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                             Niveau
                         </th>
+                        {{--
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                             Heures/Sem
                         </th>
+                        --}}
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                             Coef.
                         </th>
@@ -155,12 +157,14 @@
                             <span class="text-gray-500 text-sm">-</span>
                             @endif
                         </td>
+                        {{--
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 <span class="text-gray-300 font-medium">{{ $subject->hours_per_week }}</span>
                                 <span class="text-gray-500 text-sm">h/sem</span>
                             </div>
                         </td>
+                        --}}
                         <td class="px-6 py-4">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-600/10 text-purple-400 border border-purple-600/20">
                                 {{ $subject->formatted_coefficient }}
@@ -174,7 +178,6 @@
                         </td>
                         <td class="px-6 py-4">
                             <form action="{{ route('subjects.toggle-active', [
-                                    'tenant' => app('tenant')->name,
                                     'subject' => $subject->id
                                 ]) }}" method="POST" class="inline">
                                 @csrf
@@ -192,7 +195,6 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('subjects.show', [
-                                        'tenant' => app('tenant')->name,
                                         'subject' => $subject->id
                                     ]) }}"
                                    class="p-2 text-gray-400 hover:text-blue-400 hover:bg-gray-800 rounded-lg transition-colors duration-200"
@@ -203,7 +205,6 @@
                                     </svg>
                                 </a>
                                 <a href="{{ route('subjects.edit', [
-                                        'tenant' => app('tenant')->name,
                                         'subject' => $subject->id
                                     ]) }}"
                                        class="p-2 text-gray-400 hover:text-yellow-400">
@@ -212,7 +213,7 @@
                                     </svg>
                                 </a>
                                 <form action="{{ route('subjects.destroy', [
-                                        'tenant' => app('tenant')->name,
+                                        'tenant' => tenant()->name,
                                         'subject' => $subject->id
                                     ]) }}" method="POST" class="inline">
                                     @csrf

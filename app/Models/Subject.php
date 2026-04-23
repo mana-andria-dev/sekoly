@@ -11,7 +11,7 @@ class Subject extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'tenant_id',
+        // 'tenant_id',
         'code',
         'name',
         'description',
@@ -28,13 +28,6 @@ class Subject extends Model
         'hours_per_week' => 'integer',
         'metadata' => 'array'
     ];
-
-    // ========== RELATIONS ==========
-    
-    public function tenant()
-    {
-        return $this->belongsTo(Tenant::class);
-    }
 
     public function classAssignments()
     {
@@ -70,7 +63,7 @@ class Subject extends Model
 
     public function scopeForTenant($query, $tenantId = null)
     {
-        return $query->where('tenant_id', $tenantId ?? app('tenant')->id);
+        return $query; // Toutes les données sont déjà dans la base du tenant
     }
 
     public function scopeByLevel($query, $level)
@@ -122,8 +115,29 @@ class Subject extends Model
     
     public static function generateCode($name)
     {
-        $prefix = strtoupper(substr(preg_replace('/[^A-Z]/', '', $name), 0, 3));
-        $number = self::where('code', 'like', $prefix . '%')->count() + 1;
-        return $prefix . '-' . str_pad($number, 3, '0', STR_PAD_LEFT);
+        // Nettoyer le nom
+        $cleanName = preg_replace('/[^a-zA-Z]/', '', $name);
+        $prefix = strtoupper(substr($cleanName, 0, 3));
+        
+        // Fallback si préfixe invalide
+        if (empty($prefix)) {
+            $prefix = 'MAT';
+        }
+        
+        // Utiliser DB directement pour éviter tout scope Eloquent
+        $maxCode = \DB::table('subjects')
+            ->where('code', 'like', $prefix . '%')
+            ->max('code');
+        
+        if ($maxCode) {
+            // Extraire le numéro du dernier code
+            $parts = explode('-', $maxCode);
+            $lastNumber = end($parts);
+            $number = str_pad((int)$lastNumber + 1, 3, '0', STR_PAD_LEFT);
+        } else {
+            $number = '001';
+        }
+        
+        return $prefix . '-' . $number;
     }
 }

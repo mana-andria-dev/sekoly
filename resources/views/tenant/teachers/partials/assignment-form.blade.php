@@ -2,7 +2,7 @@
     <h3 class="text-lg font-semibold text-white mb-4">Ajouter une affectation</h3>
     
     <form id="addAssignmentForm" method="POST" 
-          action="{{ route('teachers.assignments.store', ['tenant' => app('tenant')->name, 'teacher' => $teacher->id]) }}">
+          action="{{ route('teachers.assignments.store', ['teacher' => $teacher->id]) }}">
         @csrf
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

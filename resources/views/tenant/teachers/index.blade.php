@@ -36,7 +36,7 @@
                     </form>
                 </div>
                 
-                <a href="{{ route('teachers.create', ['tenant' => app('tenant')->name]) }}"
+                <a href="{{ route('teachers.create') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -210,7 +210,7 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('teachers.show', ['tenant' => app('tenant')->name, 'teacher' => $teacher->id]) }}"
+                                <a href="{{ route('teachers.show', ['teacher' => $teacher->id]) }}"
                                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
                                    title="Voir détails">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,7 +219,7 @@
                                     </svg>
                                 </a>
                                 
-                                <a href="{{ route('teachers.edit', ['tenant' => app('tenant')->name, 'teacher' => $teacher->id]) }}"
+                                <a href="{{ route('teachers.edit', ['teacher' => $teacher->id]) }}"
                                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
                                    title="Modifier">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -227,15 +227,17 @@
                                     </svg>
                                 </a>
                                 
-                                <a href="{{ route('teachers.schedule', ['tenant' => app('tenant')->name, 'teacher' => $teacher->id]) }}"
+                                {{-- 
+                                <a href="{{ route('teachers.schedule', ['teacher' => $teacher->id]) }}"
                                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
                                    title="Emploi du temps">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
                                 </a>
+                                --}}
                                 
-                                <form action="{{ route('teachers.destroy', ['tenant' => app('tenant')->name, 'teacher' => $teacher->id]) }}" 
+                                <form action="{{ route('teachers.destroy', ['teacher' => $teacher->id]) }}" 
                                       method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
@@ -263,7 +265,7 @@
                             <p class="text-sm text-gray-500 mt-2">
                                 Commencez par ajouter vos premiers professeurs.
                             </p>
-                            <a href="{{ route('teachers.create', ['tenant' => app('tenant')->name]) }}"
+                            <a href="{{ route('teachers.create') }}"
                                class="inline-flex items-center gap-2 px-4 py-2 mt-4 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

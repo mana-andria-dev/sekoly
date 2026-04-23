@@ -1,3 +1,5 @@
+🎉 École créée avec succès !<br> Accès : http://ecole.site.test<br> Email: rmana91@gmail.com<br> Mot de passe: UlfQmabJDT<br> <strong>⚠️ Important : Veuillez changer votre mot de passe à la première connexion.</strong>
+
 /opt/lampp/bin/php artisan tinker
 
 
@@ -15,7 +17,7 @@ User::create([
 
 
 /opt/lampp/bin/php artisan make:migration create_lessons_table
-/opt/lampp/bin/php artisan make:migration create_homeworks_table
+/opt/lampp/bin/php artisan make:migration create_homeworkss_table
 /opt/lampp/bin/php artisan make:migration create_exams_table
 /opt/lampp/bin/php artisan make:migration create_grades_table
 /opt/lampp/bin/php artisan make:migration add_deleted_at_to_homework_submissions_table
@@ -26,6 +28,51 @@ User::create([
 /opt/lampp/bin/php artisan make:migration update_report_cards_table
 /opt/lampp/bin/php artisan make:migration fix_report_cards_foreign_key
 /opt/lampp/bin/php artisan make:migration add_period_to_exams_table
+/opt/lampp/bin/php artisan make:migration fix_users_tenant_id_column
+/opt/lampp/bin/php artisan make:migration add_database_column_to_tenants_table
 /opt/lampp/bin/php artisan migrate
 
+
+Chaque école
+/opt/lampp/bin/php artisan make:migration add_school_year_id_to_school_classes_table --path=database/migrations/tenant
+/opt/lampp/bin/php artisan tenants:migrate
+
+
+/opt/lampp/bin/php composer.phar require stancl/tenancy
+/opt/lampp/bin/php artisan tenancy:install
+/opt/lampp/bin/php artisan migrate
+
+/opt/lampp/bin/php artisan make:model Domain
+/opt/lampp/bin/php artisan make:middleware TenantAuthentication
+
+
+
+# Créer un tenant manuellement
+php artisan tenancy:create-tenant
+
+# Exécuter les migrations sur tous les tenants existants
+php artisan tenants:migrate
+
+# Exécuter une commande sur tous les tenants
+php artisan tenants:run "migrate --seed"
+
+
+
+
+---------------------------------------------------------------------
+
+# Créer directement dans le dossier tenant
+/opt/lampp/bin/php artisan make:migration add_new_column_to_students_table --path=database/migrations/tenant
+
+# Ou créer normalement puis déplacer
+/opt/lampp/bin/php artisan make:migration add_new_column_to_students_table
+mv database/migrations/2026_xx_xx_xxxxxx_add_new_column_to_students_table.php database/migrations/tenant/
+
+
+Pour appliquer les nouvelles migrations à tous les tenants existants
+# Appliquer à tous les tenants
+/opt/lampp/bin/php artisan tenants:migrate
+
+# Ou pour un refresh complet
+/opt/lampp/bin/php artisan tenants:migrate --fresh
 

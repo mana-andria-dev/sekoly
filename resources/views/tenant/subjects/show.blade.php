@@ -24,14 +24,14 @@
                     <a href="/dashboard" class="hover:text-gray-300 transition-colors">Dashboard</a>
                     <span class="text-gray-600">/</span>
                     <a href="{{ route('subjects.index', [
-                                        'tenant' => app('tenant')->name
+                                        'tenant' => tenant()->name
                                     ]) }}" class="hover:text-gray-300 transition-colors">Matières</a>
                     <span class="text-gray-600">/</span>
                     <span class="text-gray-300">{{ Str::limit($subject->name, 20) }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <a href="{{ route('subjects.edit', [
-                                        'tenant' => app('tenant')->name,
+                                        'tenant' => tenant()->name,
                                         'subject' => $subject->id
                                     ]) }}"
                        class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-850 hover:bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 hover:text-white transition-all duration-200">
@@ -41,7 +41,7 @@
                         Modifier
                     </a>
                     <a href="{{ route('subjects.index', [
-                                        'tenant' => app('tenant')->name
+                                        'tenant' => tenant()->name
                                     ]) }}"
                        class="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,7 +279,7 @@
                 </h3>
                 <div class="space-y-3">
                     <a href="{{ route('subjects.edit', [
-                                        'tenant' => app('tenant')->name,
+                                        'tenant' => tenant()->name,
                                         'subject' => $subject->id
                                     ]) }}"
                        class="w-full flex items-center justify-center gap-2 p-3 bg-primary-600/10 hover:bg-primary-600/20 text-primary-400 border border-primary-600/20 rounded-lg transition-all duration-200">
@@ -289,10 +289,7 @@
                         Modifier la matière
                     </a>
                     
-                    <form action="{{ route('subjects.toggle-active', [
-                                        'tenant' => app('tenant')->name,
-                                        'subject' => $subject->id
-                                    ]) }}" method="POST">
+                    <form action="{{ route('subjects.toggle-active', ['subject' => $subject->id]) }}" method="POST">
                         @csrf
                         <button type="submit" 
                                 onclick="return confirm('Êtes-vous sûr de vouloir changer le statut de cette matière ?')"
@@ -312,7 +309,7 @@
                     </form>
                     
                     <a href="{{ route('subjects.index', [
-                                        'tenant' => app('tenant')->name
+                                        'tenant' => tenant()->name
                                     ]) }}"
                        class="w-full flex items-center justify-center gap-2 p-3 bg-gray-850 hover:bg-gray-800 border border-gray-700 rounded-lg text-gray-300 hover:text-white transition-all duration-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

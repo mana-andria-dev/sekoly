@@ -66,7 +66,7 @@
                                         </svg>
                                     </button>
                                     <form method="POST" 
-                                          action="{{ route('teachers.assignments.destroy', ['tenant' => app('tenant')->name, 'teacher' => $teacher->id, 'assignment' => $assignment->id]) }}"
+                                          action="{{ route('teachers.assignments.destroy', ['teacher' => $teacher->id, 'assignment' => $assignment->id]) }}"
                                           onsubmit="return confirm('Voulez-vous vraiment supprimer cette affectation ?')">
                                         @csrf
                                         @method('DELETE')
@@ -189,7 +189,7 @@
 <script>
 function editAssignment(assignmentId) {
     // Récupérer les données de l'affectation
-    fetch(`/{{ app('tenant')->name }}/api/assignments/${assignmentId}`)
+    fetch(`/{{ tenant()->name }}/api/assignments/${assignmentId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -225,7 +225,7 @@ document.getElementById('editAssignmentForm').addEventListener('submit', functio
     const assignmentId = document.getElementById('edit_assignment_id').value;
     const formData = new FormData(this);
     
-    fetch(`/{{ app('tenant')->name }}/api/assignments/${assignmentId}`, {
+    fetch(`/{{ tenant()->name }}/api/assignments/${assignmentId}`, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',

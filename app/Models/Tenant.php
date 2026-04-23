@@ -1,34 +1,35 @@
 <?php
+// app/Models/Tenant.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
+use Stancl\Tenancy\Contracts\TenantWithDatabase;
+use Stancl\Tenancy\Database\Concerns\HasDatabase;
+use Stancl\Tenancy\Database\Concerns\HasDomains;
 
-class Tenant extends Model
+class Tenant extends BaseTenant implements TenantWithDatabase
 {
-    protected $fillable = [
-        'name',
-        'slug',
-        'email',
-        'address',
-        'phone',
-        'logo_path',
+    use HasDatabase, HasDomains;
+    
+    protected $guarded = [];
+    
+    protected $casts = [
+        'data' => 'array',
     ];
-
-    public function users()
+    
+    public static function getCustomColumns(): array
     {
-        return $this->hasMany(User::class);
+        return [
+            'id',
+            'database',
+            'name',
+            'slug',
+            'email',
+            'address',
+            'phone',
+            'logo_path',
+            'school_type_id',
+        ];
     }
-
-    public function schoolYears()
-    {
-        return $this->hasMany(SchoolYear::class);
-    }
-
-    public function schoolType()
-    {
-        return $this->belongsTo(SchoolType::class);
-    }
-
 }

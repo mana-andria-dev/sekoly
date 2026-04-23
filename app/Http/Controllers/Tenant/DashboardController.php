@@ -11,13 +11,18 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $tenant = app('tenant');
+        // Utiliser directement tenant() au lieu de app('tenant')
+        $tenant = tenant();
+        
+        // Vérifier que le tenant existe
+        if (!$tenant) {
+            abort(403, 'Tenant non trouvé');
+        }
 
         return view('tenant.dashboard', [
             'tenant' => $tenant,
-            'usersCount' => User::where('tenant_id', $tenant->id)->count(),
-            'activeYear' => SchoolYear::where('tenant_id', $tenant->id)
-                ->where('is_active', true)->first()
+            'usersCount' => User::count(),
+            'activeYear' => SchoolYear::where('is_active', true)->first()
         ]);
     }
 }

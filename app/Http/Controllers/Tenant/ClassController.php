@@ -11,8 +11,7 @@ class ClassController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SchoolClass::where('tenant_id', app('tenant')->id)
-            ->with(['year', 'assignments', 'students'])
+        $query = SchoolClass::with(['year', 'assignments', 'students'])
             ->withCount(['assignments', 'students'])
             ->when($request->search, function($query, $search) {
                 return $query->where('name', 'like', "%{$search}%");
@@ -25,8 +24,7 @@ class ClassController extends Controller
         $classes = $query->paginate(20)->withQueryString();
 
         // Get school years for filter
-        $schoolYears = SchoolYear::where('tenant_id', app('tenant')->id)
-            ->orderBy('start_date', 'desc')
+        $schoolYears = SchoolYear::orderBy('start_date', 'desc')
             ->get();
 
         return view('tenant.classes.index', compact('classes', 'schoolYears'));
@@ -34,7 +32,7 @@ class ClassController extends Controller
 
     public function create()
     {
-        $schoolYears = SchoolYear::where('tenant_id', app('tenant')->id)->get();
+        $schoolYears = SchoolYear::get();
         return view('tenant.classes.create', compact('schoolYears'));
     }
 
@@ -46,7 +44,6 @@ class ClassController extends Controller
         ]);
 
         SchoolClass::create([
-            'tenant_id' => app('tenant')->id,
             'name' => $request->name,
             'school_year_id' => $request->school_year_id,
         ]);
@@ -54,14 +51,11 @@ class ClassController extends Controller
         return redirect('/classes')->with('success', 'Classe créée avec succès.');
     }
 
-    public function show($tenant, SchoolClass $schoolClass)
-    {
-        // Vérifier que la classe appartient au tenant
-        if ($schoolClass->tenant_id !== app('tenant')->id) {
-            abort(403, 'Cette classe ne vous appartient pas.');
-        }
-        
+    public function show($id)
+    {        
         // Charger les relations nécessaires
+        $schoolClass = SchoolClass::findOrFail($id);
+
         $schoolClass->load([
             'year',
             'assignments' => function($query) {
@@ -79,23 +73,24 @@ class ClassController extends Controller
             'hours_per_week' => $schoolClass->assignments()->sum('hours_per_week'),
             'teachers_count' => $schoolClass->assignments()->whereNotNull('teacher_id')->distinct('teacher_id')->count(),
         ];
-        
         return view('tenant.classes.show', compact('schoolClass', 'assignmentStats'));
     }
 
-    public function edit($tenant, SchoolClass $schoolClass)
+    public function edit($id)
     {
-        $schoolYears = SchoolYear::where('tenant_id', app('tenant')->id)->get();
+        $schoolYears = SchoolYear::get();
+        $schoolClass = SchoolClass::findOrFail($id);
         return view('tenant.classes.edit', compact('schoolClass', 'schoolYears'));
     }
 
-    public function update($tenant, Request $request, SchoolClass $schoolClass)
+    public function update(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'school_year_id' => 'required|exists:school_years,id',
         ]);
 
+        $schoolClass = SchoolClass::findOrFail($id);
         $schoolClass->update($request->only('name', 'school_year_id'));
 
         return redirect('/classes')->with('success', 'Classe mise à jour avec succès.');

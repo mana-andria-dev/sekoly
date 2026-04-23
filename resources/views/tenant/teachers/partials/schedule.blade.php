@@ -31,7 +31,7 @@
             
             <!-- Formulaire d'ajout de disponibilité (caché par défaut) -->
             <div id="add-availability-form" class="hidden mb-4 p-4 bg-gray-800/50 rounded-lg">
-                <form action="{{ route('teachers.availabilities.store', ['tenant' => app('tenant')->name, 'teacher' => $teacher->id]) }}" 
+                <form action="{{ route('teachers.availabilities.store', ['teacher' => $teacher->id]) }}" 
                       method="POST" class="space-y-3">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -104,7 +104,6 @@
                                     {{ \Carbon\Carbon::parse($availability->end_time)->format('H:i') }}
                                 </span>
                                 <form action="{{ route('teachers.availabilities.destroy', [
-                                            'tenant' => app('tenant')->name,
                                             'teacher' => $teacher->id,
                                             'availability' => $availability->id
                                         ]) }}" 

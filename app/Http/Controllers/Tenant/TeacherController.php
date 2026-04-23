@@ -16,6 +16,7 @@ use Illuminate\Validation\ValidationException;
 
 class TeacherController extends Controller
 {
+
     public function index(Request $request)
     {
         $query = Teacher::with(['subjects', 'currentContract'])
@@ -150,11 +151,9 @@ class TeacherController extends Controller
 
             // Créer un utilisateur associé si demandé
             try {
-                $tenantId = app('tenant')->id;
                 
                 // Vérifier si un utilisateur avec cet email existe déjà
                 $existingUser = User::where('email', $teacher->email)
-                    ->where('tenant_id', $tenantId)
                     ->first();
                 
                 if ($existingUser) {
@@ -172,7 +171,6 @@ class TeacherController extends Controller
                 } else {
                     // Créer un nouvel utilisateur
                     $userData = [
-                        'tenant_id' => $tenantId,
                         'first_name' => $teacher->first_name,
                         'last_name' => $teacher->last_name,
                         'name' => $teacher->full_name,
@@ -209,7 +207,7 @@ class TeacherController extends Controller
                 // Mais loguer l'erreur pour débogage
                 // session()->flash('warning', 'Professeur créé, mais compte utilisateur non créé: ' . $userException->getMessage());
                 return redirect()->route('teachers.show', [
-                    'tenant' => app('tenant')->name,
+                    // 'tenant' => app('tenant')->name,
                     'teacher' => $teacher->id
                 ])->with('warning', 'Professeur créé, mais compte utilisateur non créé: ' . $userException->getMessage());                
             }
@@ -232,8 +230,9 @@ class TeacherController extends Controller
         }
     }
 
-    public function show($tenant, Teacher $teacher)
+    public function show($id)
     {
+        $teacher = Teacher::findOrFail($id);
         $teacher->load([
             'teacherSubjects',
             'availabilities',
@@ -256,8 +255,7 @@ class TeacherController extends Controller
         
         // Récupérer les classes et matières disponibles
         $assignedClassIds = $teacher->assignments->pluck('class_id')->toArray();
-        $availableClasses = SchoolClass::forTenant()
-            ->active()
+        $availableClasses = SchoolClass::active()
             ->whereNotIn('id', $assignedClassIds)
             ->get();
         
@@ -283,17 +281,19 @@ class TeacherController extends Controller
         ));
     }
 
-    public function edit($tenant, Teacher $teacher)
+    public function edit($id)
     {
+        $teacher = Teacher::findOrFail($id);
         $teacher->load('subjects');
         $subjects = Subject::all();
         
         return view('tenant.teachers.edit', compact('teacher', 'subjects'));
     }
 
-    public function update($tenant, Request $request, Teacher $teacher)
+    public function update(Request $request, $id)
     {
         try {
+            $teacher = Teacher::findOrFail($id);
             $validated = $request->validate([
                 'first_name' => 'required|string|max:100',
                 'last_name' => 'required|string|max:100',
@@ -346,8 +346,9 @@ class TeacherController extends Controller
         }
     }
 
-    public function destroy($tenant, Teacher $teacher)
+    public function destroy($id)
     {
+        $teacher = Teacher::findOrFail($id);
         // Vérifier si le professeur a des affectations actives
         if ($teacher->assignments()->active()->exists()) {
             return back()->with('error', 'Impossible de supprimer un professeur avec des affectations actives.');
@@ -355,7 +356,7 @@ class TeacherController extends Controller
 
         $teacher->delete();
         
-        return redirect()->route('teachers.index', ['tenant' => app('tenant')->name])
+        return redirect()->route('teachers.index')
                        ->with('success', 'Professeur archivé.');
     }
 
@@ -381,93 +382,5 @@ class TeacherController extends Controller
 
         return view('tenant.teachers.reports.workload', compact('teacher', 'workload'));
     }
-
-    public function addAssignment(Request $request, $tenant, Teacher $teacher)
-    {
-        // Valider les données
-        $validatedData = $request->validate([
-            'class_id' => 'required|exists:school_classes,id',
-            'subject_id' => 'required|exists:subjects,id',
-            // 'hours_per_week' => 'required|integer|min:1|max:40',
-            // 'coefficient' => 'required|numeric|min:0.1|max:10',
-            // 'day_of_week' => 'nullable|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            // 'start_date' => 'required|date',
-            // 'end_date' => 'nullable|date|after:start_date',
-        ]);
-
-        // VÉRIFICATION CRITIQUE : S'assurer que le professeur a un user_id
-        if (!$teacher->user_id) {
-            return back()->with('error', 'Ce professeur n\'a pas de compte utilisateur. Veuillez d\'abord créer un compte utilisateur pour ce professeur.');
-        }
-
-        // Vérifier si l'utilisateur existe
-        $user = User::where('id', $teacher->user_id)
-            ->where('tenant_id', app('tenant')->id)
-            ->first();
-
-        if (!$user) {
-            return back()->with('error', 'Le compte utilisateur associé à ce professeur n\'existe pas.');
-        }
-
-        // Vérifier le rôle
-        if ($user->role !== 'teacher') {
-            \Log::warning("L'utilisateur {$user->id} associé au professeur {$teacher->id} n'a pas le rôle 'teacher' (rôle: {$user->role})");
-            // Optionnel : corriger automatiquement
-            $user->role = 'teacher';
-            $user->save();
-        }
-
-        // Vérifier si l'affectation existe déjà
-        $existing = ClassAssignment::where([
-            'tenant_id' => app('tenant')->id,
-            'class_id' => $validatedData['class_id'],
-            'subject_id' => $validatedData['subject_id'],
-            'teacher_id' => $teacher->user_id // Utiliser user_id
-        ])->active()->current()->first();
-
-        if ($existing) {
-            return back()->with('error', 'Ce professeur est déjà affecté à cette matière dans cette classe.');
-        }
-
-        try {
-            // Créer l'affectation
-            $assignment = new ClassAssignment();
-            $assignment->tenant_id = app('tenant')->id;
-            $assignment->class_id = $validatedData['class_id'];
-            $assignment->subject_id = $validatedData['subject_id'];
-            $assignment->teacher_id = $teacher->user_id; // C'est le user_id
-            $assignment->hours_per_week = 1;//$validatedData['hours_per_week'];
-            $assignment->coefficient = 1;//$validatedData['coefficient'];
-            $assignment->day_of_week = 1;//$validatedData['day_of_week'] ?? null;
-            $assignment->start_date = null;//$validatedData['start_date'];
-            $assignment->end_date = null;//$validatedData['end_date'] ?? null;
-            $assignment->status = 'active';
-            $assignment->is_active = true;
-            
-            $assignment->save();
-
-            return back()->with('success', 'Affectation ajoutée avec succès.');
-
-        } catch (\Illuminate\Database\QueryException $e) {
-            \Log::error('Erreur création affectation', [
-                'error' => $e->getMessage(),
-                'teacher_id' => $teacher->id,
-                'user_id' => $teacher->user_id,
-                'data' => $validatedData
-            ]);
-            
-            return back()->with('error', 'Erreur technique: ' . $e->getMessage());
-        }
-    }
-
-    public function removeAssignment($tenant, Teacher $teacher, ClassAssignment $assignment)
-    {
-        if ($assignment->teacher_id !== $teacher->id) {
-            return back()->with('error', 'Cette affectation ne correspond pas au professeur.');
-        }
-
-        $assignment->deactivate();
-
-        return back()->with('success', 'Affectation supprimée avec succès.');
-    }    
+   
 }

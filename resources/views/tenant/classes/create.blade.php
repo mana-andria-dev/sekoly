@@ -158,7 +158,7 @@
                             </div>
                             <span class="text-sm text-gray-300">Classes actives</span>
                         </div>
-                        <span class="font-bold text-white text-lg">{{ App\Models\SchoolClass::where('tenant_id', app('tenant')->id)->count() }}</span>
+                        <span class="font-bold text-white text-lg">{{ App\Models\SchoolClass::count() }}</span>
                     </div>
                     <div class="flex items-center justify-between p-3 bg-gray-850/50 rounded-lg">
                         <div class="flex items-center gap-3">
@@ -167,7 +167,7 @@
                             </div>
                             <span class="text-sm text-gray-300">Élèves totaux</span>
                         </div>
-                        <span class="font-bold text-white text-lg">{{ App\Models\User::where('tenant_id', app('tenant')->id)->where('role', 'student')->count() }}</span>
+                        <span class="font-bold text-white text-lg">{{ App\Models\User::where('tenant_id', tenant()->id)->where('role', 'student')->count() }}</span>
                     </div>
                     <div class="flex items-center justify-between p-3 bg-gray-850/50 rounded-lg">
                         <div class="flex items-center gap-3">

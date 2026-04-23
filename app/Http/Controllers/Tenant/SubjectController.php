@@ -7,9 +7,16 @@ use App\Models\Subject;
 use App\Http\Requests\SubjectRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class SubjectController extends Controller
 {
+
+    public function __construct()
+    {
+        \Log::info('SubjectController constructor called');
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -69,51 +76,64 @@ class SubjectController extends Controller
      */
     public function store(SubjectRequest $request)
     {
+        // Si le code est généré automatiquement, le retirer des données validées
+        $validatedData = $request->validated();
+        
+        // Retirer le code des données validées s'il est null
+        if (empty($validatedData['code'])) {
+            unset($validatedData['code']);
+        }
+        
         $code = $request->code;
         if (empty($code)) {
             $code = Subject::generateCode($request->name);
         }
-
+        
         $subject = Subject::create([
-            'tenant_id' => app('tenant')->id,
             'code' => strtoupper($code),
             'name' => $request->name,
             'description' => $request->description,
             'level' => $request->level,
-            'hours_per_week' => $request->hours_per_week,
+            'hours_per_week' => 1,
             'coefficient' => $request->coefficient,
             'is_active' => $request->boolean('is_active', true),
         ]);
-
+        
         return redirect('/subjects')->with('success', 'Matière créée avec succès.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show($tenant, Subject $subject)
+    public function show($id)
     {
-        // $this->authorize('view', $subject);
-        
-        $subject->load([
-            'teachers' => function($query) {
-                $query->select('users.id', 'users.first_name', 'users.last_name', 'users.email');
-            },
-            'classes' => function($query) {
-                $query->with('year')->select('school_classes.id', 'school_classes.name', 'school_classes.school_year_id');
-            }
+        \Log::info('Show method called', [
+            'id' => $id,
+            'url' => request()->url(),
+            'method' => request()->method()
         ]);
-
-        return view('tenant.subjects.show', compact('subject'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($tenant, Subject $subject)
-    {
-        // $this->authorize('update', $subject);
         
+        try {
+            $subject = Subject::findOrFail($id);
+            \Log::info('Subject found', ['subject_id' => $subject->id, 'name' => $subject->name]);
+
+            // $subject->load([
+            //     'teachers' => function($query) {
+            //         $query->select('users.id', 'users.first_name', 'users.last_name', 'users.email');
+            //     },
+            //     'classes' => function($query) {
+            //         $query->with('year')->select('school_classes.id', 'school_classes.name', 'school_classes.school_year_id');
+            //     }
+            // ]);
+
+            return view('tenant.subjects.show', compact('subject'));            
+            
+            // ... reste du code
+        } catch (\Exception $e) {
+            \Log::error('Subject not found', ['id' => $id, 'error' => $e->getMessage()]);
+            return redirect()->route('subjects.index')->with('error', 'Matière non trouvée');
+        }
+    }
+    
+    public function edit($id)  // ← Supprimer le paramètre $tenant
+    {
         $levels = [
             '' => 'Non spécifié',
             'maternelle' => 'Maternelle',
@@ -121,71 +141,50 @@ class SubjectController extends Controller
             'college' => 'Collège',
             'lycee' => 'Lycée'
         ];
+        $subject = Subject::findOrFail($id);
 
         return view('tenant.subjects.edit', compact('subject', 'levels'));
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update($tenant, SubjectRequest $request, Subject $subject)
+    
+    public function update(Request $request, $id)  // ← Supprimer $tenant
     {
-        // $this->authorize('update', $subject);
-
+        $code = $request->code;
+        // if (empty($code)) {
+        //     $code = Subject::generateCode($request->name);
+        // }
+        $subject = Subject::findOrFail($id);
         $subject->update([
-            'code' => strtoupper($request->code),
+            'code' => strtoupper($code),
             'name' => $request->name,
             'description' => $request->description,
             'level' => $request->level,
-            'hours_per_week' => $request->hours_per_week,
+            'hours_per_week' => 1,
             'coefficient' => $request->coefficient,
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        return redirect('/subjects')
+        return redirect()->route('subjects.index')
             ->with('success', 'Matière mise à jour avec succès.');
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($tenant, Subject $subject)
+    
+    public function destroy($id)  // ← Supprimer $tenant
     {
-        // $this->authorize('delete', $subject);
-
-        // Vérifier si la matière est utilisée
-        if ($subject->teachers()->count() > 0) {
-            return redirect()
-                ->route('subjects.index')
-                ->with('error', 'Impossible de supprimer cette matière car elle est assignée à des professeurs.');
-        }
-
-        if ($subject->classes()->count() > 0) {
-            return redirect()
-                ->route('subjects.index')
-                ->with('error', 'Impossible de supprimer cette matière car elle est assignée à des classes.');
-        }
-
+        $subject = Subject::findOrFail($id);
         $subject->delete();
-
-        return redirect('/subjects')
+        
+        return redirect()->route('subjects.index')
             ->with('success', 'Matière supprimée avec succès.');
     }
-
-    /**
-     * Toggle active status
-     */
-    public function toggleActive($tenant, Subject $subject)
+    
+    public function toggleActive(Subject $subject)  // ← Supprimer $tenant
     {
-        // $this->authorize('update', $subject);
-
-        $subject->update([
-            'is_active' => !$subject->is_active
-        ]);
-
+        $subject->is_active = !$subject->is_active;
+        $subject->save();
+        
         $status = $subject->is_active ? 'activée' : 'désactivée';
         
-        return back()->with('success', "Matière {$status} avec succès.");
+        return redirect()->route('subjects.index')
+            ->with('success', "Matière {$status} avec succès.");
     }
 
     /**

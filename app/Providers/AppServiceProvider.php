@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Schema::defaultStringLength(191);
+        
+        // Charger les migrations tenant uniquement quand on est dans un contexte tenant
+        if ($this->app->environment('local') || $this->app->environment('production')) {
+            // Cette condition sera vraie quand tenancy est initialisé
+            if (tenancy()->initialized) {
+                $this->loadMigrationsFrom(database_path('migrations/tenant'));
+            }
+        }
     }
 }

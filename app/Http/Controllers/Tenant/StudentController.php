@@ -12,6 +12,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
+use App\Models\Student;
+
 class StudentController extends Controller
 {
     // Liste des élèves
@@ -22,13 +24,16 @@ class StudentController extends Controller
         $status = $request->get('status');
 
         // Obtenir l'année scolaire active
-        $currentYear = SchoolYear::where('tenant_id', app('tenant')->id)
-            ->where('is_active', true)
-            ->first();
-        
+        // $currentYear = SchoolYear::where('tenant_id', app('tenant')->id)
+        //     ->where('is_active', true)
+        //     ->first();
+
+        // Utiliser tenant() au lieu de app('tenant')
+        $currentYear = SchoolYear::where('is_active', true)->first();     
+
+
         // Construire la requête avec la dernière inscription active
         $students = User::students()
-            ->forTenant()
             ->when($search, function($query) use ($search) {
                 $query->where(function($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -59,11 +64,10 @@ class StudentController extends Controller
                 $query->with('schoolClass');
             }])
             ->orderBy('name')
-            ->paginate(20);
+            ->paginate(20);      
 
         // Récupérer les classes pour le filtre
-        $classes = SchoolClass::where('tenant_id', app('tenant')->id)
-            ->when($currentYear, function($query) use ($currentYear) {
+        $classes = SchoolClass::when($currentYear, function($query) use ($currentYear) {
                 $query->where('school_year_id', $currentYear->id);
             })
             ->with('year')
@@ -72,9 +76,8 @@ class StudentController extends Controller
 
         // Statistiques
         $stats = [
-            'total' => User::students()->forTenant()->count(),
+            'total' => User::students()->count(),
             'active' => User::students()
-                ->forTenant()
                 ->whereHas('studentEnrollments', function($query) use ($currentYear) {
                     $query->where('status', 'active');
                     if ($currentYear) {
@@ -82,8 +85,7 @@ class StudentController extends Controller
                     }
                 })
                 ->count(),
-            'classes' => SchoolClass::forTenant()
-                ->when($currentYear, function($query) use ($currentYear) {
+            'classes' => SchoolClass::when($currentYear, function($query) use ($currentYear) {
                     $query->where('school_year_id', $currentYear->id);
                 })
                 ->whereHas('enrollments', function($query) use ($currentYear) {
@@ -93,7 +95,6 @@ class StudentController extends Controller
                     }
                 })->count(),
             'new_this_month' => User::students()
-                ->forTenant()
                 ->where('created_at', '>=', now()->startOfMonth())
                 ->count(),
         ];

@@ -167,8 +167,8 @@
                         </div>
                         
                         <!-- Hours per week & Coefficient -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="animate-slide-in" style="animation-delay: 0.5s">
+                        <div class="grid grid-cols-1">
+                            <!-- <div class="animate-slide-in" style="animation-delay: 0.5s">
                                 <div class="flex items-center justify-between mb-2">
                                     <label class="text-sm font-medium text-gray-300 flex items-center gap-2">
                                         <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
@@ -200,7 +200,7 @@
                                         {{ $message }}
                                     </div>
                                 @enderror
-                            </div>
+                            </div> -->
                             
                             <div class="animate-slide-in" style="animation-delay: 0.6s">
                                 <div class="flex items-center justify-between mb-2">

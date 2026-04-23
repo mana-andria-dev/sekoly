@@ -10,7 +10,6 @@ class SchoolClass extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'tenant_id', 
         'school_year_id', 
         'name'
     ];    
@@ -18,7 +17,7 @@ class SchoolClass extends Model
     // Ajoutez cette méthode
     public function scopeForTenant($query, $tenantId = null)
     {
-        return $query->where('tenant_id', $tenantId ?? app('tenant')->id);
+        return $query->where('tenant_id', $tenantId ?? tenant()->id);
     }
 
     // Ajoutez aussi cette méthode pour les classes actives

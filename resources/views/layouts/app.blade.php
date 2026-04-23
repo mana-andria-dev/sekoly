@@ -44,6 +44,14 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        .error-border {
+            border-color: #dc3545 !important;
+        }
+        .error-text {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -61,7 +69,7 @@
                 <li class="nav-item"><a class="nav-link" href="#schoolyear">Année scolaire</a></li>
                 <li class="nav-item"><a class="nav-link" href="#security">Sécurité</a></li>
                 <li class="nav-item"><a class="nav-link" href="#pricing">Tarifs</a></li>
-                <li class="nav-item"><a class="btn btn-primary ms-3" href="/register">Créer mon école</a></li>
+                <li class="nav-item"><a class="btn btn-primary ms-3" href="/inscription">Créer mon école</a></li>
             </ul>
         </div>
     </div>
@@ -77,11 +85,44 @@
             élèves, enseignants, classes, notes, années scolaires et bien plus.
         </p>
         <div class="mt-5">
-            <a href="/register" class="btn btn-light btn-lg fw-bold">Démarrer gratuitement</a>
+            <a href="/inscription" class="btn btn-light btn-lg fw-bold">Démarrer gratuitement</a>
             <a href="#features" class="btn btn-outline-light btn-lg ms-2">Voir les fonctionnalités</a>
         </div>
     </div>
 </section>
+
+<!-- Affichage des messages de succès/erreur -->
+@if(session('success'))
+<div class="container mt-3">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+@endif
+
+@if(session('error'))
+<div class="container mt-3">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+@endif
+
+@if ($errors->any())
+<div class="container mt-3">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Erreurs de validation :</strong>
+        <ul class="mb-0 mt-2">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+@endif
 
 <!-- FEATURES -->
 <section id="features" class="py-5">
@@ -175,8 +216,8 @@
                 <div class="pricing p-4 text-center">
                     <h5>Essentiel</h5>
                     <h2 class="fw-bold">Gratuit</h2>
-                    <p>Jusqu’à 50 élèves</p>
-                    <a href="/register" class="btn btn-outline-primary">Commencer</a>
+                    <p>Jusqu'à 50 élèves</p>
+                    <a href="/inscription" class="btn btn-outline-primary">Commencer</a>
                 </div>
             </div>
             <div class="col-md-4">
@@ -184,7 +225,7 @@
                     <h5>Pro</h5>
                     <h2 class="fw-bold">Payant</h2>
                     <p>Élèves illimités + support prioritaire</p>
-                    <a href="/register" class="btn btn-primary">Choisir</a>
+                    <a href="/inscription" class="btn btn-primary">Choisir</a>
                 </div>
             </div>
         </div>
@@ -202,58 +243,110 @@
 </body>
 
 <!-- MODAL INSCRIPTION ECOLE -->
-<div class="modal fade" id="registerModal" tabindex="-1">
+<div class="modal fade" id="registerModal" tabindex="-1" data-bs-backdrop="static">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title fw-bold">Créer votre école</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data">
+      <form method="POST" action="{{ route('inscription') }}" enctype="multipart/form-data" id="registerForm">
         @csrf
         <div class="modal-body">
-          <h6 class="fw-bold mb-3">Informations sur l’établissement</h6>
+          <!-- Affichage des erreurs dans la modale -->
+          @if ($errors->any())
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>❌ Erreurs :</strong>
+            <ul class="mb-0 mt-2">
+              @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          @endif
+
+          <h6 class="fw-bold mb-3">Informations sur l'établissement</h6>
           <div class="row g-3 mb-4">
             <div class="col-md-6">
-              <label class="form-label">Nom de l'école</label>
-              <input type="text" name="school_name" class="form-control" required>
+              <label class="form-label">Nom de l'école *</label>
+              <input type="text" name="school_name" class="form-control @error('school_name') is-invalid @enderror" 
+                     value="{{ old('school_name') }}" required>
+              @error('school_name')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
             <div class="col-md-6">
-              <label class="form-label">Adresse de l'école</label>
-              <input type="text" name="address" class="form-control" required>
+              <label class="form-label">Sous-domaine *</label>
+              <div class="input-group">
+                <input type="text" name="subdomain" class="form-control @error('subdomain') is-invalid @enderror" 
+                       value="{{ old('subdomain') }}" placeholder="mon-ecole" required>
+                <span class="input-group-text">.site.test</span>
+              </div>
+              @error('subdomain')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+              @enderror
+              <small class="text-muted">Utilisez uniquement des lettres, chiffres et tirets</small>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Téléphone</label>
-              <input type="text" name="phone" class="form-control" required>
+              <label class="form-label">Adresse de l'école *</label>
+              <input type="text" name="address" class="form-control @error('address') is-invalid @enderror" 
+                     value="{{ old('address') }}" required>
+              @error('address')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
             <div class="col-md-6">
-              <label class="form-label">Logo de l'école</label>
-              <input type="file" name="logo" class="form-control" accept="image/*">
+              <label class="form-label">Téléphone *</label>
+              <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" 
+                     value="{{ old('phone') }}" required>
+              @error('phone')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Logo de l'école (optionnel)</label>
+              <input type="file" name="logo" class="form-control @error('logo') is-invalid @enderror" accept="image/*">
+              @error('logo')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
           </div>
 
           <h6 class="fw-bold mb-3">Informations administrateur</h6>
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">Prénom</label>
-              <input type="text" name="first_name" class="form-control" required>
+              <label class="form-label">Prénom *</label>
+              <input type="text" name="first_name" class="form-control @error('first_name') is-invalid @enderror" 
+                     value="{{ old('first_name') }}" required>
+              @error('first_name')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
             <div class="col-md-6">
-              <label class="form-label">Nom</label>
-              <input type="text" name="last_name" class="form-control" required>
+              <label class="form-label">Nom *</label>
+              <input type="text" name="last_name" class="form-control @error('last_name') is-invalid @enderror" 
+                     value="{{ old('last_name') }}" required>
+              @error('last_name')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
             <div class="col-md-12">
-              <label class="form-label">Email administrateur</label>
-              <input type="email" name="email" class="form-control" required>
+              <label class="form-label">Email administrateur *</label>
+              <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
+                     value="{{ old('email') }}" required>
+              @error('email')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
           </div>
 
-          <div class="alert alert-info mt-4">
+          <!-- <div class="alert alert-info mt-4">
             🔐 Les accès administrateur seront générés automatiquement et envoyés par email.
-          </div>
+          </div> -->
         </div>
         <div class="modal-footer">
-          <button class="btn btn-primary btn-lg">Créer mon espace école</button>
+          <button type="submit" class="btn btn-primary btn-lg">Créer mon espace école</button>
         </div>
       </form>
     </div>
@@ -261,12 +354,31 @@
 </div>
 
 <script>
-const modalLinks = document.querySelectorAll('a[href="/register"]');
+// Ouvrir la modale quand on clique sur "Créer mon école"
+const modalLinks = document.querySelectorAll('a[href="/inscription"]');
 modalLinks.forEach(link => {
   link.addEventListener('click', e => {
     e.preventDefault();
-    new bootstrap.Modal(document.getElementById('registerModal')).show();
+    const modal = new bootstrap.Modal(document.getElementById('registerModal'));
+    modal.show();
   });
+});
+
+// Si le formulaire a des erreurs, garder la modale ouverte
+@if ($errors->any())
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = new bootstrap.Modal(document.getElementById('registerModal'));
+    modal.show();
+  });
+@endif
+
+// Validation côté client pour le sous-domaine
+document.getElementById('registerForm')?.addEventListener('submit', function(e) {
+  const subdomain = document.querySelector('input[name="subdomain"]').value;
+  if (subdomain && !/^[a-z0-9-]+$/.test(subdomain)) {
+    e.preventDefault();
+    alert('Le sous-domaine ne peut contenir que des lettres minuscules, des chiffres et des tirets.');
+  }
 });
 </script>
 </html>
