@@ -197,7 +197,6 @@ class TeacherController extends Controller
                 }
                 \Log::info('=== CRÉATION RÉUSSIE ===');
                 return redirect()->route('teachers.show', [
-                    'tenant' => app('tenant')->name,
                     'teacher' => $teacher->id
                 ])->with('success', 'Professeur créé avec succès.');
                 

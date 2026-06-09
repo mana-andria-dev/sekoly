@@ -12,7 +12,7 @@
                     {{ isset($lesson) ? 'Modifiez les informations de la leçon' : 'Créez une nouvelle leçon' }}
                 </p>
             </div>
-            <a href="{{ route('lessons.index', app('tenant')->name) }}"
+            <a href="{{ route('lessons.index') }}"
                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -42,7 +42,7 @@
     </div>
     @endif
 
-    <form action="{{ isset($lesson) ? route('lessons.update', [app('tenant')->name, $lesson->id]) : route('lessons.store', app('tenant')->name) }}" 
+    <form action="{{ isset($lesson) ? route('lessons.update', $lesson->id) : route('lessons.store') }}" 
           method="POST">
         @csrf
         @if(isset($lesson))
@@ -237,7 +237,7 @@
 
             <!-- Actions -->
             <div class="flex items-center justify-end gap-3">
-                <a href="{{ route('lessons.index', app('tenant')->name) }}"
+                <a href="{{ route('lessons.index') }}"
                    class="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-white transition-colors">
                     Annuler
                 </a>

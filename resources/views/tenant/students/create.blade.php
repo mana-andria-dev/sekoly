@@ -70,7 +70,7 @@
         <p class="text-gray-400">Remplissez les informations de l'élève et son inscription</p>
     </div>
 
-    <form action="{{ route('students.store', ['tenant' => app('tenant')->name]) }}" 
+    <form action="{{ route('students.store') }}" 
           method="POST" 
           enctype="multipart/form-data"
           class="space-y-6">
@@ -607,6 +607,7 @@
                 </div>
                 
                 <!-- Section -->
+                {{--
                 <div>
                     <label class="block text-sm font-medium text-gray-400 mb-2">Section</label>
                     <select name="section" 
@@ -627,6 +628,7 @@
                         </div>
                     @enderror
                 </div>
+                --}}
                 
                 <!-- Remarques -->
                 <div class="md:col-span-2">
@@ -649,7 +651,7 @@
         
         <!-- Actions -->
         <div class="flex items-center justify-end gap-3">
-            <a href="{{ route('students.index', ['tenant' => app('tenant')->name]) }}" 
+            <a href="{{ route('students.index') }}" 
                class="px-6 py-3 border border-gray-700 text-gray-300 hover:text-white hover:border-gray-600 rounded-lg font-medium transition-colors">
                 Annuler
             </a>

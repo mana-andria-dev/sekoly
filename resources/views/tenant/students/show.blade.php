@@ -18,8 +18,20 @@
             </div>
             
             <div class="flex items-center gap-3">
+                <a href="{{ route('students.documents.generate', $student->id) }}"
+                   class="flex items-center justify-between p-3 bg-gray-850/50 hover:bg-gray-800 rounded-lg transition-all duration-200 group">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-gray-800 group-hover:bg-purple-600/20 rounded-lg transition-colors">
+                            <span class="text-gray-400 group-hover:text-purple-600">📄</span>
+                        </div>
+                        <span class="text-sm text-gray-300 group-hover:text-white">Générer un document</span>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-500 group-hover:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                
                 <a href="{{ route('students.edit', [
-                        'tenant' => app('tenant')->name,
                         'student' => $student->id
                     ]) }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg border border-gray-700 transition-all duration-200">
@@ -28,7 +40,7 @@
                     </svg>
                     Modifier
                 </a>
-                <a href="{{ route('students.index', ['tenant' => app('tenant')->name]) }}"
+                <a href="{{ route('students.index') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-850 hover:bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 hover:text-white transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -546,7 +558,6 @@
                 </h3>
                 <div class="space-y-3">
                     <a href="{{ route('students.edit', [
-                            'tenant' => app('tenant')->name,
                             'student' => $student->id
                         ]) }}"
                        class="flex items-center justify-between p-3 bg-gray-850/50 hover:bg-gray-800 rounded-lg transition-all duration-200 group">
@@ -563,8 +574,7 @@
                     
                     @if($currentEnrollment)
                     <a href="{{ route('classes.show', [
-                            'tenant' => app('tenant')->name,
-                            'schoolClass' => $currentEnrollment->class_id
+                            'class' => $currentEnrollment->class_id
                         ]) }}"
                        class="flex items-center justify-between p-3 bg-gray-850/50 hover:bg-gray-800 rounded-lg transition-all duration-200 group">
                         <div class="flex items-center gap-3">

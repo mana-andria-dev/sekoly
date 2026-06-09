@@ -11,14 +11,14 @@
                 <p class="text-gray-400 text-sm mt-1">Détails de la leçon</p>
             </div>
             <div class="flex items-center gap-3">
-                <a href="{{ route('lessons.index', app('tenant')->name) }}"
+                <a href="{{ route('lessons.index') }}"
                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                     Retour à la liste
                 </a>
-                <a href="{{ route('lessons.edit', [app('tenant')->name, $lesson->id]) }}"
+                <a href="{{ route('lessons.edit', $lesson->id) }}"
                    class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -232,7 +232,7 @@
             <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
                 <h2 class="text-lg font-semibold text-white mb-4">Actions rapides</h2>
                 <div class="space-y-2">
-                    <form action="{{ route('lessons.status', [app('tenant')->name, $lesson->id]) }}" method="POST" class="inline-block w-full">
+                    <form action="{{ route('lessons.status', $lesson->id) }}" method="POST" class="inline-block w-full">
                         @csrf
                         @method('PATCH')
                         <select name="status" onchange="this.form.submit()" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">

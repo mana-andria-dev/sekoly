@@ -9,7 +9,7 @@
 
     <!-- Formulaire de suppression (placé AVANT le formulaire de MAJ) -->
     <div class="mb-6 flex justify-end">
-        <form action="{{ route('students.destroy', ['tenant' => app('tenant')->name, 'student' => $student->id]) }}" 
+        <form action="{{ route('students.destroy', ['student' => $student->id]) }}" 
               method="POST" 
               id="deleteForm"
               onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet élève ? Cette action est irréversible.')">
@@ -23,7 +23,7 @@
     </div>
 
     <!-- Formulaire de mise à jour -->
-    <form action="{{ route('students.update', ['tenant' => app('tenant')->name, 'student' => $student->id]) }}" 
+    <form action="{{ route('students.update', ['student' => $student->id]) }}" 
           method="POST" 
           enctype="multipart/form-data"
           class="space-y-6">
@@ -438,6 +438,7 @@
                 </div>
                 
                 <!-- Section -->
+                {{--
                 <div>
                     <label class="block text-sm font-medium text-gray-400 mb-2">Section</label>
                     <select name="section" 
@@ -450,6 +451,7 @@
                         <option value="E" {{ old('section', $currentEnrollment->section ?? '') == 'E' ? 'selected' : '' }}>Section E</option>
                     </select>
                 </div>
+                --}}
                 
                 <!-- Numéro de matricule -->
                 <div>
@@ -519,7 +521,7 @@
         
         <!-- Actions -->
         <div class="flex items-center justify-end gap-3">
-            <a href="{{ route('students.index', ['tenant' => app('tenant')->name]) }}" 
+            <a href="{{ route('students.index') }}" 
                class="px-6 py-3 border border-gray-700 text-gray-300 hover:text-white hover:border-gray-600 rounded-lg font-medium transition-colors">
                 Annuler
             </a>

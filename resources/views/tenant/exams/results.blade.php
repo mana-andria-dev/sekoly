@@ -12,7 +12,7 @@
                 <p class="text-gray-400 text-sm mt-1">Saisie des notes et résultats d'examen</p>
             </div>
             <div class="flex items-center gap-3">
-                <a href="{{ route('exams.show', [app('tenant')->name, $exam->id]) }}"
+                <a href="{{ route('exams.show', $exam->id) }}"
                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -50,7 +50,7 @@
     @endif
 
     <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <form action="{{ route('exams.results.store', [app('tenant')->name, $exam->id]) }}" method="POST">
+        <form action="{{ route('exams.results.store', $exam->id) }}" method="POST">
             @csrf
             
             <div class="overflow-x-auto">
@@ -106,7 +106,7 @@
             
             @if(count($students) > 0)
             <div class="mt-6 flex items-center justify-end gap-3">
-                <a href="{{ route('exams.show', [app('tenant')->name, $exam->id]) }}"
+                <a href="{{ route('exams.show', $exam->id) }}"
                    class="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-white transition-colors">
                     Annuler
                 </a>

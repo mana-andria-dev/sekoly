@@ -12,7 +12,7 @@ class ReportCard extends Model
     protected $table = 'report_cards';
     
     protected $fillable = [
-        'tenant_id', 'student_id', 'class_id', 'school_year_id', 'period',
+        'student_id', 'class_id', 'school_year_id', 'period',
         'subject_grades', 'overall_average', 'class_average', 'class_rank',
         'total_students', 'appreciation', 'teacher_comments', 'principal_comments',
         'absences', 'behaviors', 'issued_date', 'status'

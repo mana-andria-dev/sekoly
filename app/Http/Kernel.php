@@ -67,7 +67,10 @@ class Kernel extends HttpKernel
         // 'tenant' => \App\Http\Middleware\IdentifyTenant::class,
         // 'tenant.auth' => \App\Http\Middleware\TenantAuthentication::class,
         'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
-        'tenant.auth' => \App\Http\Middleware\TenantAuthentication::class,
+        // 'tenant.auth' => \App\Http\Middleware\TenantAuthentication::class,
         'tenant.db' => \App\Http\Middleware\EnsureTenantDatabaseConnection::class,
+        'tenant.auth' => \App\Http\Middleware\TenantAuthMiddleware::class,
+        'ensure.tenant.connection' => \App\Http\Middleware\EnsureTenantConnection::class,
+        'tenant.subscription' => \App\Http\Middleware\CheckTenantSubscription::class,
     ];
 }

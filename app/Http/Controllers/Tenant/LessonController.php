@@ -14,10 +14,9 @@ class LessonController extends Controller
 {
     public function index(Request $request)
     {
-        $tenant = app('tenant');
+        // $tenant = app('tenant');
         
         $lessons = Lesson::with(['class', 'subject', 'teacher'])
-            ->where('tenant_id', $tenant->id)
             ->when($request->class_id, function($query, $classId) {
                 return $query->where('class_id', $classId);
             })
@@ -36,17 +35,16 @@ class LessonController extends Controller
             ->orderBy('lesson_date', 'desc')
             ->paginate(15);
             
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $subjects = Subject::where('tenant_id', $tenant->id)->get();
+        $classes = SchoolClass::get();
+        $subjects = Subject::get();
         
         return view('tenant.lessons.index', compact('lessons', 'classes', 'subjects'));
     }
     
     public function create()
     {
-        $tenant = app('tenant');
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $subjects = Subject::where('tenant_id', $tenant->id)->get();
+        $classes = SchoolClass::get();
+        $subjects = Subject::get();
         $teachers = Teacher::where('status', 'active')->get();
             
         return view('tenant.lessons.create', compact('classes', 'subjects', 'teachers'));
@@ -69,40 +67,35 @@ class LessonController extends Controller
             'objectives' => 'nullable|array',
         ]);
         
-        $tenant = app('tenant');
-        $validated['tenant_id'] = $tenant->id;
         $validated['status'] = 'scheduled';
         
         Lesson::create($validated);
         
-        return redirect()->route('lessons.index', $tenant->name)
+        return redirect()->route('lessons.index')
             ->with('success', 'Leçon créée avec succès');
     }
     
-    public function show($tenant, Lesson $lesson)
+    public function show($id)
     {
-        $this->authorizeTenant($lesson);
+        // $this->authorizeTenant($lesson);
+        $lesson = Lesson::findOrFail($id);
         $lesson->load(['class', 'subject', 'teacher']);
         
         return view('tenant.lessons.show', compact('lesson'));
     }
     
-    public function edit($tenant, Lesson $lesson)
+    public function edit($id)
     {
-        $this->authorizeTenant($lesson);
-        
-        $tenant = app('tenant');
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $subjects = Subject::where('tenant_id', $tenant->id)->get();
+        $lesson = Lesson::findOrFail($id);
+        $classes = SchoolClass::get();
+        $subjects = Subject::get();
         $teachers = Teacher::where('status', 'active')->get();
             
         return view('tenant.lessons.edit', compact('lesson', 'classes', 'subjects', 'teachers'));
     }
     
-    public function update($tenant, Request $request, Lesson $lesson)
-    {
-        $this->authorizeTenant($lesson);
-        
+    public function update(Request $request, $id)
+    {   
         $validated = $request->validate([
             'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
@@ -119,29 +112,29 @@ class LessonController extends Controller
             'objectives' => 'nullable|array',
         ]);
         
+        $lesson = Lesson::findOrFail($id);
         $lesson->update($validated);
         
-        return redirect()->route('lessons.index', app('tenant')->name)
+        return redirect()->route('lessons.index')
             ->with('success', 'Leçon mise à jour avec succès');
     }
     
-    public function destroy($tenant, Lesson $lesson)
+    public function destroy($id)
     {
-        $this->authorizeTenant($lesson);
+        $lesson = Lesson::findOrFail($id);
         $lesson->delete();
         
-        return redirect()->route('lessons.index', app('tenant')->name)
+        return redirect()->route('lessons.index')
             ->with('success', 'Leçon supprimée avec succès');
     }
     
-    public function updateStatus(Request $request, Lesson $lesson)
+    public function updateStatus(Request $request, $id)
     {
-        $this->authorizeTenant($lesson);
-        
         $request->validate([
             'status' => 'required|in:scheduled,ongoing,completed,cancelled'
         ]);
         
+        $lesson = Lesson::findOrFail($id);
         $lesson->update(['status' => $request->status]);
         
         return response()->json(['success' => true]);

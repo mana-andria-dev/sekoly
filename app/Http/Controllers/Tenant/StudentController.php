@@ -102,19 +102,19 @@ class StudentController extends Controller
         return view('tenant.students.index', compact('students', 'classes', 'stats', 'currentYear'));
     }
 
-    public function activate($tenant, User $student)
+    public function activate($id)
     {
         // $this->authorize('update', $student);
-        
+        $student = User::findOrFail($id);
         $student->update(['is_active' => true]);
         
         return back()->with('success', 'Élève activé avec succès');
     }
 
-    public function deactivate($tenant, User $student)
+    public function deactivate($id)
     {
         // $this->authorize('update', $student);
-        
+        $student = User::findOrFail($id);
         $student->update(['is_active' => false]);
         
         return back()->with('success', 'Élève désactivé avec succès');
@@ -124,24 +124,18 @@ class StudentController extends Controller
     public function create()
     {
         // Récupérer toutes les années scolaires pour le select
-        $schoolYears = SchoolYear::where('tenant_id', app('tenant')->id)
-            ->orderBy('start_date', 'desc')
-            ->get();
+        $schoolYears = SchoolYear::orderBy('start_date', 'desc')->get();
         
         // Année active par défaut
-        $currentYear = SchoolYear::where('tenant_id', app('tenant')->id)
-            ->where('is_active', true)
-            ->first();
+        $currentYear = SchoolYear::where('is_active', true)->first();
         
         // Récupérer toutes les classes
-        $classes = SchoolClass::where('tenant_id', app('tenant')->id)
-            ->with('year')
-            ->get(); 
+        $classes = SchoolClass::with('year')->get(); 
 
         return view('tenant.students.create', compact('classes', 'currentYear', 'schoolYears'));
     }
 
-    public function store( $tenant, Request $request)
+    public function store(Request $request)
     {
         // Valider les données avec messages personnalisés
         $validated = $request->validate([
@@ -231,7 +225,7 @@ class StudentController extends Controller
             
             // Créer l'utilisateur élève
             $student = User::create([
-                'tenant_id' => app('tenant')->id,
+                // 'tenant_id' => app('tenant')->id,
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
                 'name' => $validated['first_name'] . ' ' . $validated['last_name'],
@@ -270,13 +264,13 @@ class StudentController extends Controller
 
             // Créer l'inscription
             StudentEnrollment::create([
-                'tenant_id' => app('tenant')->id,
+                // 'tenant_id' => app('tenant')->id,
                 'student_id' => $student->id,
                 'class_id' => $validated['class_id'],
                 'school_year_id' => $validated['school_year_id'],
                 'enrollment_date' => $validated['enrollment_date'],
                 'roll_number' => $rollNumber,
-                'section' => $validated['section'],
+                // 'section' => $validated['section'],
                 'remarks' => $validated['remarks'],
                 'status' => 'active',
             ]);
@@ -318,11 +312,12 @@ class StudentController extends Controller
     }
 
     // Affichage détail élève
-    public function show($tenant, User $student)
+    public function show($id)
     {
+        $student = User::findOrFail($id);
         // Vérifier que l'élève appartient au tenant
-        if ($student->tenant_id !== app('tenant')->id) {
-            abort(403, 'Accès non autorisé à cet élève.');
+        if (!$student) {
+            abort(403, 'Elève introuvable.');
         }
 
         // Charger toutes les relations nécessaires
@@ -376,18 +371,14 @@ class StudentController extends Controller
         ));        
     }
 
-    public function edit($tenant, User $student)
+    public function edit($id)
     {
         // $this->authorize('update', $student);
+        $student = User::findOrFail($id);
         
-        $schoolYears = SchoolYear::where('tenant_id', app('tenant')->id)
-            ->orderBy('start_date', 'desc')
-            ->get();
+        $schoolYears = SchoolYear::orderBy('start_date', 'desc')->get();
         
-        $classes = SchoolClass::where('tenant_id', app('tenant')->id)
-            ->with('year')
-            ->orderBy('name')
-            ->get();
+        $classes = SchoolClass::with('year')->orderBy('name')->get();
             
         $currentEnrollment = $student->studentEnrollments()
             ->latest('enrollment_date')
@@ -401,9 +392,10 @@ class StudentController extends Controller
         return view('tenant.students.edit', compact('student', 'currentEnrollment', 'schoolYears', 'classes'));
     }
 
-    public function update($tenant, Request $request, User $student)
+    public function update(Request $request, $id)
     {
         try {
+            $student = User::findOrFail($id);
             $validated = $request->validate([
                 'first_name' => 'required|string|max:100',
                 'last_name' => 'required|string|max:100',
@@ -521,7 +513,7 @@ class StudentController extends Controller
                 } else {
                     // Créer une nouvelle inscription si aucune n'existe
                     StudentEnrollment::create([
-                        'tenant_id' => app('tenant')->id,
+                        // 'tenant_id' => app('tenant')->id,
                         'student_id' => $student->id,
                         'class_id' => $validated['class_id'],
                         'school_year_id' => $validated['school_year_id'],
@@ -548,7 +540,7 @@ class StudentController extends Controller
 
             $message = implode(', ', $successMessages);
 
-            return redirect()->route('students.index', ['tenant' => $tenant])
+            return redirect()->route('students.index')
                 ->with('success', $message);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -561,8 +553,8 @@ class StudentController extends Controller
         return back()
             ->withInput()
             ->with('error', 'Une erreur est survenue lors de la mise à jour: ' . $e->getMessage());
+        }
     }
-}
 
     // Gestion de l'inscription
     public function updateEnrollment($tenant, Request $request, User $student)
@@ -617,8 +609,9 @@ class StudentController extends Controller
     }
 
     // Suppression élève
-    public function destroy($tenant, User $student)
+    public function destroy($id)
     {        
+        $student = User::findOrFail($id);
         $student->delete();
         
         return redirect('/students')
@@ -628,10 +621,7 @@ class StudentController extends Controller
     // Ajoutez ces méthodes
     public function importForm()
     {
-        $classes = SchoolClass::where('tenant_id', app('tenant')->id)
-            ->with('year')
-            ->orderBy('name')
-            ->get();
+        $classes = SchoolClass::with('year')->orderBy('name')->get();
 
         // Colonnes pour le mapping
         $requiredColumns = [
@@ -711,8 +701,7 @@ class StudentController extends Controller
             $result = $this->processImportData($data, [
                 'skip_duplicates' => $skipDuplicates,
                 'generate_passwords' => $generatePasswords,
-                'default_class_id' => $defaultClassId,
-                'tenant_id' => app('tenant')->id,
+                'default_class_id' => $defaultClassId
             ]);
             
             // If AJAX request
@@ -727,7 +716,6 @@ class StudentController extends Controller
                     'errors' => $result['errors'],
                     'passwords' => $result['passwords'],
                     'download_url' => route('students.import.report', [
-                        'tenant' => app('tenant')->name,
                         'reportId' => $result['report_id']
                     ]),
                 ]);
@@ -819,9 +807,7 @@ class StudentController extends Controller
                 
                 // Check for duplicate email
                 $email = strtolower(trim($row['email']));
-                $existingStudent = User::where('email', $email)
-                    ->where('tenant_id', $options['tenant_id'])
-                    ->first();
+                $existingStudent = User::where('email', $email)->first();
                 
                 if ($existingStudent && $options['skip_duplicates']) {
                     $skipped++;
@@ -830,7 +816,6 @@ class StudentController extends Controller
                 
                 // Prepare student data
                 $studentData = [
-                    'tenant_id' => $options['tenant_id'],
                     'first_name' => $row['first_name'],
                     'last_name' => $row['last_name'],
                     'name' => $row['first_name'] . ' ' . $row['last_name'],
@@ -970,9 +955,7 @@ class StudentController extends Controller
         $classId = null;
         
         if (!empty($row['class_code'])) {
-            $class = SchoolClass::where('tenant_id', $options['tenant_id'])
-                ->where('name', 'like', '%' . $row['class_code'] . '%')
-                ->first();
+            $class = SchoolClass::where('name', 'like', '%' . $row['class_code'] . '%')->first();
             if ($class) {
                 $classId = $class->id;
             }
@@ -988,7 +971,6 @@ class StudentController extends Controller
             
             // Create enrollment
             StudentEnrollment::create([
-                'tenant_id' => $options['tenant_id'],
                 'student_id' => $student->id,
                 'class_id' => $classId,
                 'school_year_id' => $class->school_year_id,

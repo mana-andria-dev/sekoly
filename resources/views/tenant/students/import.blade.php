@@ -18,14 +18,14 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <a href="{{ route('students.index', ['tenant' => app('tenant')->name]) }}"
+                <a href="{{ route('students.index') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-850 hover:bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 hover:text-white transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                     Retour
                 </a>
-                <a href="{{ route('students.create', ['tenant' => app('tenant')->name]) }}"
+                <a href="{{ route('students.create') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg border border-gray-700 transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -55,7 +55,7 @@
                 
                 <!-- Form Body -->
                 <div class="p-6">
-                    <form action="{{ route('students.import', ['tenant' => app('tenant')->name]) }}" 
+                    <form action="{{ route('students.import') }}" 
                           method="POST" 
                           enctype="multipart/form-data"
                           id="importForm">
@@ -194,7 +194,7 @@
                         
                         <!-- Form Actions -->
                         <div class="mt-8 flex justify-end gap-3">
-                            <a href="{{ route('students.index', ['tenant' => app('tenant')->name]) }}" 
+                            <a href="{{ route('students.index') }}" 
                                class="px-5 py-2.5 border border-gray-700 text-gray-300 hover:text-white hover:bg-gray-850 hover:border-gray-600 rounded-lg font-medium transition-all duration-200">
                                 Annuler
                             </a>
@@ -251,7 +251,7 @@
                             <p class="text-sm text-gray-300">Téléchargez notre template</p>
                         </div>
                         
-                        <a href="{{ route('students.import.template', ['tenant' => app('tenant')->name]) }}" 
+                        <a href="{{ route('students.import.template') }}" 
                            class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-warning/10 hover:bg-warning/20 text-warning font-medium rounded-lg border border-warning/20 transition-all duration-200">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>

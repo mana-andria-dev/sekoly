@@ -1,30 +1,33 @@
 <?php
+// database/migrations/2025_12_17_081005_create_school_years_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateSchoolYearsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('school_years', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('tenant_id');
             $table->string('name');
-            $table->boolean('is_active')->default(false);
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->boolean('is_current')->default(false);
             $table->timestamps();
+            
+            // Commenter temporairement la contrainte
+            // $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+            
+            // Ajouter un index simple
+            $table->index('tenant_id');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('school_years');
     }
-};
+}

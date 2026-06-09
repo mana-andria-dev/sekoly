@@ -8,6 +8,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+use Illuminate\Support\Facades\Storage;
+use App\Models\Tenant\FeePayment;
+use App\Models\Tenant\FeeBalance;
+use App\Models\Tenant\SchoolYear;
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -229,6 +234,57 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(SchoolClass::class, 'student_enrollments', 'student_id', 'class_id')
                     ->withTimestamps();
+    }
+
+    /**
+     * Get the fee payments for the student
+     */
+    public function feePayments()
+    {
+        return $this->hasMany(FeePayment::class, 'student_id');
+    }
+
+    /**
+     * Get the fee balances for the student
+     */
+    public function feeBalances()
+    {
+        return $this->hasMany(FeeBalance::class, 'student_id');
+    }
+
+    /**
+     * Get the current fee balance for the student (active school year)
+     */
+    public function currentFeeBalance()
+    {
+        $currentYear = SchoolYear::where('is_active', true)->first();
+        
+        if (!$currentYear) {
+            return null;
+        }
+        
+        return $this->hasOne(FeeBalance::class, 'student_id')
+            ->where('school_year_id', $currentYear->id);
+    }
+
+    /**
+     * Get total unpaid fees for the student
+     */
+    public function getTotalUnpaidFeesAttribute()
+    {
+        return $this->feeBalances()
+            ->whereHas('schoolYear', function($query) {
+                $query->where('is_active', true);
+            })
+            ->sum('balance');
+    }
+
+    /**
+     * Check if student has unpaid fees
+     */
+    public function hasUnpaidFees()
+    {
+        return $this->getTotalUnpaidFeesAttribute() > 0;
     }
 
 }

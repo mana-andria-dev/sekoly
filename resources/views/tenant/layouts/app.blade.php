@@ -98,12 +98,18 @@
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100">
+    @php
+        // Récupérer l'utilisateur du guard tenant
+        $tenantUser = Auth::guard('tenant')->user();
+    @endphp
+
     <!-- Container principal avec hauteur fixe -->
     <div class="h-screen flex flex-col">
         <!-- Sidebar et contenu principal en ligne -->
         <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar Modernisée -->
             <aside class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col flex-shrink-0 overflow-y-auto">
+
                 <!-- Logo & Tenant Name -->
                 <div class="p-6 border-b border-gray-800 flex-shrink-0">
                     <div class="flex items-center gap-3">
@@ -133,7 +139,23 @@
                                     </svg>
                                 </span>
                             </a>
-                        </li>                     
+                        </li>         
+
+                        <!-- Dans la sidebar, après Utilisateurs -->
+                        <li>
+                            <a href="{{ route('tenant.subscription.info') }}" 
+                               class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('subscription*') ? 'bg-gray-850 text-white' : '' }}">
+                                <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
+                                    <span class="text-lg">💳</span>
+                                </div>
+                                <span class="font-medium">Abonnement</span>
+                                @if(isset($activeSubscription) && $activeSubscription->ends_at <= now()->addDays(30))
+                                    <span class="ml-auto px-2 py-0.5 text-xs bg-yellow-600/20 text-yellow-400 rounded-full">
+                                        Expire bientôt
+                                    </span>
+                                @endif
+                            </a>
+                        </li>                                    
 
                         <!-- Matières -->
                         <li>
@@ -200,6 +222,16 @@
                             </a>
                         </li>
 
+                        <li>
+                            <a href="{{ route('documents.index') }}" 
+                               class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors {{ request()->routeIs('documents.*') ? 'bg-gray-800 text-white' : '' }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <span>Documents</span>
+                            </a>  
+                        </li>                      
+
                         <!-- Emploi du temps -->
                         <li>
                             <a href="{{ route('timetables.index', ['tenant' => tenant()->name]) }}" 
@@ -210,6 +242,33 @@
                                 <span class="font-medium">Emploi du temps</span>
                             </a>
                         </li>                         
+
+                        <!-- Finance -->
+                        <li class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4">
+                            Finance
+                        </li>
+
+                        <!-- Frais de scolarité -->
+                        <li>
+                            <a href="{{ route('fees.structures.index') }}" 
+                               class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('fees/structures*') ? 'bg-gray-850 text-white' : '' }}">
+                                <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
+                                    <span class="text-lg">💰</span>
+                                </div>
+                                <span class="font-medium">Structures de frais</span>
+                            </a>
+                        </li>
+
+                        <!-- Paiements -->
+                        <li>
+                            <a href="{{ route('fees.payments.index') }}" 
+                               class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-850 transition-all duration-200 group {{ request()->is('fees/payments*') ? 'bg-gray-850 text-white' : '' }}">
+                                <div class="sidebar-icon w-5 h-5 flex items-center justify-center">
+                                    <span class="text-lg">💳</span>
+                                </div>
+                                <span class="font-medium">Paiements</span>
+                            </a>
+                        </li>
 
                         <!-- Pédagogie -->
                         <li class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -295,7 +354,7 @@
 
                 <!-- Logout Section -->
                 <div class="p-5 border-t border-gray-800 flex-shrink-0">
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
+                    <form method="POST" action="{{ route('tenant.logout') }}" class="w-full">
                         @csrf
                         <button type="submit" 
                                 class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-850 hover:bg-danger/10 text-danger hover:text-danger border border-gray-800 hover:border-danger/30 rounded-lg font-medium transition-all duration-200 group">
@@ -305,8 +364,8 @@
                             <span>Déconnexion</span>
                         </button>
                     </form>
-                </div>
-            </aside>
+                </div>            
+            </aside>          
 
             <!-- Main Content Area -->
             <div class="flex-1 flex flex-col overflow-hidden">
@@ -318,17 +377,17 @@
                             <div class="flex items-center gap-3 px-4 py-2 bg-gray-850 rounded-lg">
                                 <div class="w-8 h-8 bg-gradient-to-br from-primary-600 to-info rounded-full flex items-center justify-center">
                                     <span class="text-white font-semibold text-sm">
-                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                        {{ substr($tenantUser->name ?? 'U', 0, 1) }}
                                     </span>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-semibold text-white">{{ auth()->user()->name }}</p>
+                                    <p class="text-sm font-semibold text-white">{{ substr($tenantUser->name ?? 'U', 0, 1) }}</p>
                                     <p class="text-xs text-gray-400">Administrateur</p>
                                 </div>
                             </div>
 
                             <!-- Logout Button -->
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('tenant.logout') }}">
                                 @csrf
                                 <button type="submit" 
                                         class="px-4 py-2 border border-gray-700 hover:border-danger text-gray-400 hover:text-danger font-medium rounded-lg transition-all duration-200 flex items-center gap-2">
@@ -337,7 +396,7 @@
                                     </svg>
                                     Déconnexion
                                 </button>
-                            </form>
+                            </form>                            
                         </div>
                     </div>
                 </nav>
@@ -345,6 +404,25 @@
                 <!-- Main Content (Scrollable) -->
                 <main class="flex-1 overflow-y-auto">
                     <div class="p-6">
+
+
+                    @if(session('subscription_warning'))
+                    <div class="mb-6 bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-4 animate-fade-in">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-yellow-600/20 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-yellow-300">{{ session('subscription_warning') }}</p>
+                            </div>
+                            <a href="{{ route('tenant.subscription.info') }}" class="text-yellow-400 hover:text-yellow-300 text-sm">
+                                Voir détails →
+                            </a>
+                        </div>
+                    </div>
+                    @endif                                
 
                     <!-- Dans la section main, juste après le début du contenu -->
                     @if(session('success'))

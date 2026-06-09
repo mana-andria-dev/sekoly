@@ -170,8 +170,7 @@
                                 </span>
                                 @if(($class->students_count ?? 0) > 0)
                                 <a href="{{ route('classes.show', [
-                                            'tenant' => tenant()->name,
-                                            'schoolClass' => $class->id
+                                            'class' => $class->id
                                         ]) }}#students"
                                    class="text-xs text-gray-500 hover:text-gray-300 transition-colors">
                                     Voir
@@ -186,8 +185,7 @@
                                 </span>
                                 @if(($class->assignments_count ?? 0) > 0)
                                 <a href="{{ route('classes.show', [
-                                            'tenant' => tenant()->name,
-                                            'schoolClass' => $class->id
+                                            'class' => $class->id
                                         ]) }}#assignments"
                                    class="text-xs text-gray-500 hover:text-gray-300 transition-colors">
                                     Voir

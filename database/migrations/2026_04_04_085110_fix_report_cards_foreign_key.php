@@ -10,27 +10,27 @@ return new class extends Migration
     public function up()
     {
         // Supprimer l'ancienne contrainte
-        Schema::table('report_cards', function (Blueprint $table) {
-            $table->dropForeign(['student_id']);
-        });
+        // Schema::table('report_cards', function (Blueprint $table) {
+        //     $table->dropForeign(['student_id']);
+        // });
         
-        // Ajouter la nouvelle contrainte vers users
-        Schema::table('report_cards', function (Blueprint $table) {
-            $table->foreign('student_id')
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('cascade');
-        });
+        // // Ajouter la nouvelle contrainte vers users
+        // Schema::table('report_cards', function (Blueprint $table) {
+        //     $table->foreign('student_id')
+        //           ->references('id')
+        //           ->on('users')
+        //           ->onDelete('cascade');
+        // });
     }
 
     public function down()
     {
-        Schema::table('report_cards', function (Blueprint $table) {
-            $table->dropForeign(['student_id']);
-            $table->foreign('student_id')
-                  ->references('id')
-                  ->on('students')
-                  ->onDelete('cascade');
-        });
+        // Schema::table('report_cards', function (Blueprint $table) {
+        //     $table->dropForeign(['student_id']);
+        //     $table->foreign('student_id')
+        //           ->references('id')
+        //           ->on('students')
+        //           ->onDelete('cascade');
+        // });
     }
 };

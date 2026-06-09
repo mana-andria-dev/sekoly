@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class TimetableSlot extends Model
 {
     protected $fillable = [
-        'tenant_id',
+        // 'tenant_id',
         'timetable_id',
         'day_of_week',
         'start_time',

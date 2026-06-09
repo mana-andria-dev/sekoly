@@ -14,14 +14,13 @@ use App\Models\ClassAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class TimetableController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Timetable::where('tenant_id', app('tenant')->id)
-            ->with(['class', 'academicYear', 'creator'])
-            ->orderBy('created_at', 'desc');
+        $query = Timetable::with(['class', 'academicYear', 'creator'])->orderBy('created_at', 'desc');
 
         // Filtres
         if ($request->filled('class_id')) {
@@ -39,7 +38,7 @@ class TimetableController extends Controller
         $timetables = $query->paginate(20);
         
         // Pour les filtres
-        $classes = SchoolClass::where('tenant_id', app('tenant')->id)->get();
+        $classes = SchoolClass::get();
         $academicYears = SchoolYear::where('is_active', true)->get();
 
         return view('tenant.timetables.index', compact('timetables', 'classes', 'academicYears'));
@@ -47,8 +46,10 @@ class TimetableController extends Controller
 
     public function create()
     {
-        $classes = SchoolClass::where('tenant_id', app('tenant')->id)
-            ->with('year')
+        // Maintenant auth()->guard('tenant') retourne l'utilisateur du tenant
+        $user = Auth::guard('tenant')->user();
+
+        $classes = SchoolClass::with('year')
             ->whereHas('year', function($query) {
                 $query->where('is_active', true);
             })
@@ -59,7 +60,7 @@ class TimetableController extends Controller
         return view('tenant.timetables.create', compact('classes', 'academicYears'));
     }
 
-    public function store($tenat, Request $request)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -71,8 +72,7 @@ class TimetableController extends Controller
             'type' => 'nullable|in:weekly,daily,custom',
         ]);
 
-        $validated['tenant_id'] = app('tenant')->id;
-        $validated['created_by'] = auth()->id();
+        $validated['created_by'] = Auth::guard('tenant')->user()->id;
         $validated['is_active'] = true;
 
         $timetable = Timetable::create($validated);
@@ -82,13 +82,11 @@ class TimetableController extends Controller
             $slotsCreated = $timetable->generateFromAssignments();
             
             return redirect()->route('timetables.show', [
-                'tenant' => app('tenant')->name,
                 'timetable' => $timetable->id
             ])->with('success', "Emploi du temps créé avec {$slotsCreated} créneaux générés automatiquement.");
         }
 
         return redirect()->route('timetables.show', [
-            'tenant' => app('tenant')->name,
             'timetable' => $timetable->id
         ])->with('success', 'Emploi du temps créé avec succès.');
     }
@@ -142,12 +140,9 @@ class TimetableController extends Controller
     }
     */
 
-    public function show($tenat, Timetable $timetable)
+    public function show($id)
     {
-        // Vérifier que le timetable appartient au tenant
-        if ($timetable->tenant_id !== app('tenant')->id) {
-            abort(403, 'Accès non autorisé');
-        }
+        $timetable = Timetable::findOrFail($id);
         
         $timetable->load([
             'class', 
@@ -163,8 +158,7 @@ class TimetableController extends Controller
         $slotsByDay = $timetable->timetableSlots->groupBy('day_of_week');
         
         // Récupérer TOUTES les affectations de la classe
-        $allAssignments = ClassAssignment::where('tenant_id', app('tenant')->id)
-            ->where('class_id', $timetable->class_id)
+        $allAssignments = ClassAssignment::where('class_id', $timetable->class_id)
             ->where('is_active', true)
             ->with(['subject', 'teacher'])
             ->get();
@@ -350,12 +344,10 @@ class TimetableController extends Controller
         ])->with('success', 'Emploi du temps mis à jour.');
     }
 
-    public function destroy($tenat, Timetable $timetable)
+    public function destroy($id)
     {
         // Vérifier que le timetable appartient au tenant
-        if ($timetable->tenant_id !== app('tenant')->id) {
-            abort(403, 'Accès non autorisé');
-        }
+        $timetable = Timetable::findOrFail($id);
         
         $timetable->delete();
         
@@ -363,15 +355,11 @@ class TimetableController extends Controller
             ->with('success', 'Emploi du temps archivé.');
     }
 
-    public function destroySlot($tenant, $id)
+    public function destroySlot($id)
     {
         try {
-            // Récupérer le tenant actuel
-            $tenant = app('tenant');
-            
             // Trouver le slot avec vérification du tenant
-            $slot = TimetableSlot::where('tenant_id', $tenant->id)
-                                ->findOrFail($id);
+            $slot = TimetableSlot::findOrFail($id);
             
             // Vérifier s'il y a des dépendances avant suppression
             // (ajoutez vos propres vérifications ici)
@@ -388,16 +376,13 @@ class TimetableController extends Controller
         }
     }    
 
-    public function manageSlots($tenat, Timetable $timetable)
+    public function manageSlots($id)
     {
-        // Vérifier que le timetable appartient au tenant
-        if ($timetable->tenant_id !== app('tenant')->id) {
-            abort(403, 'Accès non autorisé');
-        }
+
+        $timetable = Timetable::findOrFail($id);
         
         // Récupérer les affectations disponibles pour cette classe
-        $assignments = ClassAssignment::where('tenant_id', app('tenant')->id)
-            ->where('class_id', $timetable->class_id)
+        $assignments = ClassAssignment::where('class_id', $timetable->class_id)
             ->where('is_active', true)
             ->with(['subject', 'teacher', 'teacherProfile'])
             ->get();
@@ -417,12 +402,9 @@ class TimetableController extends Controller
         ));
     }
 
-    public function addSlot($tenat, Request $request, Timetable $timetable)
+    public function addSlot(Request $request, $id)
     {
-        // Vérifier que le timetable appartient au tenant
-        if ($timetable->tenant_id !== app('tenant')->id) {
-            abort(403, 'Accès non autorisé');
-        }
+        $timetable = Timetable::findOrFail($id);
         
         $validated = $request->validate([
             'assignment_id' => 'nullable|exists:class_assignments,id',
@@ -462,7 +444,7 @@ class TimetableController extends Controller
         //     return back()->with('error', 'Conflit d\'horaire détecté.');
         // }
 
-        $validated['tenant_id'] = app('tenant')->id;
+        $validated['tenant_id'] = tenant()->id;
         $slot = $timetable->timetableSlots()->create($validated);
 
         return back()->with('success', 'Créneau ajouté avec succès.');

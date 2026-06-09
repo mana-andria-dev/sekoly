@@ -21,10 +21,8 @@ class ReportCardController extends Controller
     
     public function index(Request $request)
     {
-        $tenant = app('tenant');
         
         $reportCards = ReportCard::with(['student', 'class', 'schoolYear'])
-            ->where('tenant_id', $tenant->id)
             ->when($request->class_id, function($query, $classId) {
                 return $query->where('class_id', $classId);
             })
@@ -37,17 +35,16 @@ class ReportCardController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
         
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $schoolYears = SchoolYear::where('tenant_id', $tenant->id)->get();
+        $classes = SchoolClass::get();
+        $schoolYears = SchoolYear::get();
         
         return view('tenant.report-cards.index', compact('reportCards', 'classes', 'schoolYears'));
     }
     
     public function create()
     {
-        $tenant = app('tenant');
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $schoolYears = SchoolYear::where('tenant_id', $tenant->id)->get();
+        $classes = SchoolClass::get();
+        $schoolYears = SchoolYear::get();
         
         $periods = [
             'trimester1' => '1er Trimestre',
@@ -69,7 +66,6 @@ class ReportCardController extends Controller
             'period' => 'required|string',
         ]);
         
-        $tenant = app('tenant');
         $class = SchoolClass::find($request->class_id);
         $schoolYear = SchoolYear::find($request->school_year_id);
         
@@ -109,7 +105,6 @@ class ReportCardController extends Controller
                     'period' => $request->period,
                 ],
                 [
-                    'tenant_id' => $tenant->id,
                     'class_id' => $class->id,
                     'subject_grades' => $reportData['subject_grades'],
                     'overall_average' => $reportData['overall_average'],
@@ -123,28 +118,28 @@ class ReportCardController extends Controller
             $generatedCount++;
         }
         
-        return redirect()->route('report-cards.index', $tenant->name)
+        return redirect()->route('report-cards.index')
             ->with('success', $generatedCount . ' bulletin(s) généré(s) avec succès');
     }
     
-    public function show($tenant, ReportCard $reportCard)
+    public function show($id)
     {
-        $this->authorizeTenant($reportCard);
+        $reportCard = ReportCard::findOrFail($id);
         $reportCard->load(['student', 'class', 'schoolYear']);
         
         return view('tenant.report-cards.show', compact('reportCard'));
     }
     
-    public function edit($tenant, ReportCard $reportCard)
+    public function edit($id)
     {
-        $this->authorizeTenant($reportCard);
+        $reportCard = ReportCard::findOrFail($id);
         
         return view('tenant.report-cards.edit', compact('reportCard'));
     }
     
-    public function update($tenant, Request $request, ReportCard $reportCard)
+    public function update(Request $request, $id)
     {
-        $this->authorizeTenant($reportCard);
+        $reportCard = ReportCard::findOrFail($id);
         
         $validated = $request->validate([
             'appreciation' => 'nullable|string',
@@ -157,30 +152,28 @@ class ReportCardController extends Controller
         
         $reportCard->update($validated);
         
-        return redirect()->route('report-cards.show', [app('tenant')->name, $reportCard->id])
+        return redirect()->route('report-cards.show', $reportCard->id)
             ->with('success', 'Bulletin mis à jour avec succès');
     }
     
-    public function publish($tenant, ReportCard $reportCard)
+    public function publish($id)
     {
-        $this->authorizeTenant($reportCard);
+        $reportCard = ReportCard::findOrFail($id);
         $reportCard->update(['status' => 'published']);
         
         return redirect()->back()->with('success', 'Bulletin publié avec succès');
     }
     
-    public function print($tenant, ReportCard $reportCard)
+    public function print($id)
     {
-        $this->authorizeTenant($reportCard);
+        $reportCard = ReportCard::findOrFail($id);
         $reportCard->load(['student', 'class', 'schoolYear']);
         
         return view('tenant.report-cards.print', compact('reportCard'));
     }
     
-    public function classReportCards($tenant, SchoolClass $class, $period = null)
-    {
-        $this->authorizeTenant($class);
-        
+    public function classReportCards(SchoolClass $class, $period = null)
+    {   
         $query = ReportCard::where('class_id', $class->id)
             ->with(['student', 'schoolYear']);
         

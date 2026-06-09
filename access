@@ -1,4 +1,8 @@
-🎉 École créée avec succès !<br> Accès : http://ecole.site.test<br> Email: rmana91@gmail.com<br> Mot de passe: UlfQmabJDT<br> <strong>⚠️ Important : Veuillez changer votre mot de passe à la première connexion.</strong>
+🎉 École créée avec succès !<br> Accès : http://ecole.site.test<br> Email: falyrakoto@yopmail.com<br> Mot de passe: NOb4cIslKi<br> Formule: Basic - Monthly (99€)<br> Prochain renouvellement: 06/06/2026<br> <strong>⚠️ Important : Veuillez changer votre mot de passe à la première connexion.</strong>
+
+
+/opt/lampp/bin/php artisan config:clear
+/opt/lampp/bin/php artisan cache:clear
 
 /opt/lampp/bin/php artisan tinker
 
@@ -15,6 +19,11 @@ User::create([
     'role' => 'admin',
 ]);
 
+Mail::raw('Test SMTP Gmail', function ($message) {
+    $message->to('rmana91@gmail.com')
+            ->subject('Test sekoly email');
+});
+
 
 /opt/lampp/bin/php artisan make:migration create_lessons_table
 /opt/lampp/bin/php artisan make:migration create_homeworkss_table
@@ -30,6 +39,12 @@ User::create([
 /opt/lampp/bin/php artisan make:migration add_period_to_exams_table
 /opt/lampp/bin/php artisan make:migration fix_users_tenant_id_column
 /opt/lampp/bin/php artisan make:migration add_database_column_to_tenants_table
+/opt/lampp/bin/php artisan make:migration create_admin_users_table
+/opt/lampp/bin/php artisan make:migration create_subscriptions_table
+/opt/lampp/bin/php artisan make:migration add_missing_col_to_users_table
+/opt/lampp/bin/php artisan make:migration add_tenant_id_to_central_users_table
+/opt/lampp/bin/php artisan make:migration add_status_to_tenants_table
+/opt/lampp/bin/php artisan make:migration add_status_fields_to_tenants_table
 /opt/lampp/bin/php artisan migrate
 
 
@@ -38,12 +53,28 @@ Chaque école
 /opt/lampp/bin/php artisan tenants:migrate
 
 
+/opt/lampp/bin/php artisan make:migration create_fee_structures_table --path=database/migrations/tenant
+/opt/lampp/bin/php artisan make:migration create_fee_payments_table --path=database/migrations/tenant
+/opt/lampp/bin/php artisan make:migration create_fee_balances_table --path=database/migrations/tenant
+/opt/lampp/bin/php artisan make:migration create_student_documents --path=database/migrations/tenant
+/opt/lampp/bin/php artisan tenants:migrate
+
+AJOUTER AMDIN
+admin@sekoly.com / admin2026
+/opt/lampp/bin/php artisan db:seed --class=AdminUserSeeder
+
+
 /opt/lampp/bin/php composer.phar require stancl/tenancy
 /opt/lampp/bin/php artisan tenancy:install
 /opt/lampp/bin/php artisan migrate
 
 /opt/lampp/bin/php artisan make:model Domain
 /opt/lampp/bin/php artisan make:middleware TenantAuthentication
+
+
+MAIL
+
+/opt/lampp/bin/php artisan make:mail SchoolRegistrationConfirmationMail
 
 
 
@@ -76,3 +107,128 @@ Pour appliquer les nouvelles migrations à tous les tenants existants
 # Ou pour un refresh complet
 /opt/lampp/bin/php artisan tenants:migrate --fresh
 
+---------------------------------------------------------------------
+
+Voici une explication détaillée du fonctionnement du module de gestion des frais de scolarité (écolage) :
+
+Vue d'ensemble du module
+Le module permet de gérer tous les aspects financiers d'une école : définition des frais, suivi des paiements, gestion des soldes, et génération de rapports.
+
+Workflow complet
+1. Configuration initiale (Administrateur)
+text
+Étape 1: Créer les structures de frais
+├── Frais d'inscription (une fois par an)
+├── Mensualités (10 mois de l'année scolaire)
+├── Frais d'examen (trimestre/semestre)
+├── Frais d'activité (sport, culture, sorties)
+└── Autres frais (uniforme, matériel, etc.)
+Exemple de structures :
+
+php
+// Année scolaire 2024-2025
+1. Frais d'inscription: 50,000 Ar (tous les élèves)
+2. Mensualité Septembre: 30,000 Ar
+3. Mensualité Octobre: 30,000 Ar
+4. Mensualité Novembre: 30,000 Ar
+...
+5. Frais examen 1er trimestre: 15,000 Ar
+6. Frais examen 2ème trimestre: 15,000 Ar
+7. Frais sport: 10,000 Ar
+2. Inscription des élèves
+text
+Processus d'inscription:
+┌─────────────────────────────────────────────────────────┐
+│ 1. Créer un nouvel élève                                 │
+│    └── Remplir informations personnelles                │
+│    └── Sélectionner la classe et l'année scolaire       │
+│                                                          │
+│ 2. Le système génère automatiquement :                  │
+│    ├── Frais d'inscription                              │
+│    ├── Mensualités pour l'année                         │
+│    └── Autres frais obligatoires                        │
+│                                                          │
+│ 3. Création du solde initial                            │
+│    └── total_amount = somme de tous les frais           │
+│    └── total_paid = 0                                   │
+│    └── balance = total_amount                           │
+└─────────────────────────────────────────────────────────┘
+3. Gestion des paiements
+text
+Flux des paiements:
+
+Parents/Élève
+     │
+     ▼
+Effectue un paiement
+     │
+     ├── Espèces
+     ├── Virement bancaire
+     ├── Chèque
+     └── Mobile Money
+     │
+     ▼
+Enregistrement dans le système
+     │
+     ├── Génération facture (INV-2024-XXXXX)
+     ├── Mise à jour du statut
+     │   ├── paid_amount += montant payé
+     │   ├── remaining_amount = amount - paid_amount
+     │   └── status (pending/partial/paid)
+     │
+     ▼
+Mise à jour du solde
+     │
+     ├── total_paid += montant payé
+     └── balance = total_amount - total_paid
+4. Statuts des paiements
+php
+// Cycle de vie d'une facture
+pending → partial → paid
+    ↓
+ overdue (si date dépassée et non payé)
+    ↓
+ cancelled (annulé manuellement)
+5. Cas d'usage détaillés
+Cas 1: Inscription d'un nouvel élève en Septembre
+php
+// Automatiquement créé
+$feeStructures = [
+    ['name' => 'Frais d\'inscription', 'amount' => 50000],
+    ['name' => 'Mensualité Septembre', 'amount' => 30000, 'due_date' => '2024-09-10'],
+    ['name' => 'Mensualité Octobre', 'amount' => 30000, 'due_date' => '2024-10-10'],
+    // ... jusqu'à Juin
+];
+
+// Solde initial
+$balance = [
+    'total_amount' => 50000 + (10 * 30000) = 350,000 Ar,
+    'total_paid' => 0,
+    'balance' => 350,000 Ar
+];
+Cas 2: Paiement partiel
+php
+// Parent paie 100,000 Ar pour le 1er trimestre
+$payment = [
+    'amount' => 100000,
+    'paid_amount' => 100000,
+    'remaining_amount' => 0,
+    'status' => 'paid'
+];
+
+// Mise à jour solde
+$balance = [
+    'total_paid' => 100000,
+    'balance' => 250000  // Reste à payer
+];
+Cas 3: Paiement mensuel
+php
+// Paiement de la mensualité de Septembre
+$payment = [
+    'fee_structure_id' => 'mensualite_septembre',
+    'amount' => 30000,
+    'paid_amount' => 30000,
+    'status' => 'paid'
+];
+
+// La mensualité suivante (Octobre) reste à payer

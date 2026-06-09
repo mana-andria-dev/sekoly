@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('first_name')->after('id');
-            $table->string('last_name')->after('first_name');
-            $table->string('role')->default('user')->after('password');
-            $table->foreignId('tenant_id')->nullable()->constrained()->cascadeOnDelete();
-        });
+        // Schema::table('users', function (Blueprint $table) {
+        //     $table->string('first_name')->after('id');
+        //     $table->string('last_name')->after('first_name');
+        //     $table->string('role')->default('user')->after('password');
+        //     $table->foreignId('tenant_id')->nullable()->constrained()->cascadeOnDelete();
+        // });
 
         // optionnel : supprimer name si tu ne l'utilises plus
         // Schema::table('users', fn(Blueprint $table) => $table->dropColumn('name'));
@@ -20,8 +20,8 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['first_name', 'last_name', 'role', 'tenant_id']);
-        });
+        // Schema::table('users', function (Blueprint $table) {
+        //     $table->dropColumn(['first_name', 'last_name', 'role', 'tenant_id']);
+        // });
     }
 };

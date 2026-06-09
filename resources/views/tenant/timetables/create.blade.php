@@ -17,7 +17,7 @@
 
     <!-- Formulaire -->
     <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <form action="{{ route('timetables.store', ['tenant' => app('tenant')->name]) }}" method="POST">
+        <form action="{{ route('timetables.store') }}" method="POST">
             @csrf
             
             <div class="space-y-6">
@@ -165,7 +165,7 @@
                 
                 <!-- Actions -->
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
-                    <a href="{{ route('timetables.index', ['tenant' => app('tenant')->name]) }}"
+                    <a href="{{ route('timetables.index') }}"
                        class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                         Annuler
                     </a>

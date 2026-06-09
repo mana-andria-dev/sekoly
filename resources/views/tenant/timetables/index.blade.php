@@ -18,7 +18,7 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <a href="{{ route('timetables.create', ['tenant' => app('tenant')->name]) }}"
+                <a href="{{ route('timetables.create') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -31,7 +31,7 @@
 
     <!-- Filtres rapides -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <a href="{{ route('classes.index', ['tenant' => app('tenant')->name]) }}?filter=timetable"
+        <a href="{{ route('classes.index') }}?filter=timetable"
            class="bg-gray-900 border border-gray-800 rounded-xl p-4 card-hover">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-blue-600/10 rounded-lg">
@@ -44,7 +44,7 @@
             </div>
         </a>
         
-        <a href="{{ route('teachers.index', ['tenant' => app('tenant')->name]) }}?filter=schedule"
+        <a href="{{ route('teachers.index') }}?filter=schedule"
            class="bg-gray-900 border border-gray-800 rounded-xl p-4 card-hover">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-green-600/10 rounded-lg">
@@ -153,7 +153,7 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('timetables.show', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
+                                <a href="{{ route('timetables.show', ['timetable' => $timetable->id]) }}"
                                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
                                    title="Voir">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +162,7 @@
                                     </svg>
                                 </a>
                                 
-                                <a href="{{ route('timetables.manage-slots', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
+                                <a href="{{ route('timetables.manage-slots', ['timetable' => $timetable->id]) }}"
                                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
                                    title="Gérer les créneaux">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,7 +170,7 @@
                                     </svg>
                                 </a>
                                 
-                                <a href="{{ route('classes.timetable', ['tenant' => app('tenant')->name, 'class' => $timetable->class_id]) }}"
+                                <a href="{{ route('classes.timetable', ['class' => $timetable->class_id]) }}"
                                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
                                    title="Vue classe">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -12,21 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tenants', function (Blueprint $table) {
-            // rendre slug obligatoire
-            $table->string('slug')->nullable(false)->change();
-
-            // supprimer subdomain s'il existe
-            if (Schema::hasColumn('tenants', 'subdomain')) {
-                $table->dropColumn('subdomain');
-            }
+            $table->enum('status', ['pending', 'active', 'suspended', 'inactive'])->default('pending')->after('data');
+            $table->timestamp('activated_at')->nullable()->after('status');
+            $table->text('activation_notes')->nullable()->after('activated_at');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('tenants', function (Blueprint $table) {
-            $table->string('subdomain')->nullable();
+            //
         });
     }
-
 };

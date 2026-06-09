@@ -13,7 +13,7 @@ class Exam extends Model
     protected $table = 'exams';
     
     protected $fillable = [
-        'tenant_id', 'class_id', 'subject_id', 'teacher_id',
+        'class_id', 'subject_id', 'teacher_id',
         'title', 'description', 'type', 'exam_date', 'start_time',
         'end_time', 'duration_minutes', 'max_score', 'coefficient',
         'location', 'topics', 'status', 'instructions'

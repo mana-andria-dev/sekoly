@@ -18,17 +18,10 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <a href="{{ route('timetables.show', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
+                <a href="{{ route('timetables.show', ['timetable' => $timetable->id]) }}"
                    class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     Retour
                 </a>
-                <!-- 
-                <a href="{{ route('timetables.generate-from-assignments', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
-                   onclick="return confirm('Générer automatiquement les créneaux à partir des affectations ? Cela écrasera les créneaux existants.')"
-                   class="px-4 py-2.5 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
-                    Générer automatiquement
-                </a>
-                 -->
             </div>
         </div>
     </div>
@@ -39,7 +32,7 @@
             <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
                 <h3 class="text-lg font-semibold text-white mb-4">Ajouter un créneau</h3>
                 
-                <form action="{{ route('timetables.add-slot', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}" 
+                <form action="{{ route('timetables.add-slot', ['timetable' => $timetable->id]) }}" 
                       method="POST">
                     @csrf
                     
@@ -280,7 +273,7 @@
                                     </button>
                                     
                                     <!-- Supprimer -->
-                                    <form action="{{ route('timetable-slots.destroy', ['tenant' => app('tenant')->name, 'timetable_slot' => $slot->id]) }}" 
+                                    <form action="{{ route('timetable-slots.destroy', ['timetable_slot' => $slot->id]) }}" 
                                           method="POST">
                                         @csrf
                                         @method('DELETE')

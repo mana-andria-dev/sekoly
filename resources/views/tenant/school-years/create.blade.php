@@ -10,7 +10,7 @@
                 <h1 class="text-2xl sm:text-3xl font-bold text-white">Nouvelle année scolaire</h1>
                 <p class="text-gray-400 text-sm mt-1">Créez une nouvelle année scolaire avec ses périodes</p>
             </div>
-            <a href="{{ route('school-years.index', app('tenant')->name) }}"
+            <a href="{{ route('school-years.index') }}"
                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -41,7 +41,7 @@
     @endif
 
     <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <form action="{{ route('school-years.store', app('tenant')->name) }}" method="POST">
+        <form action="{{ route('school-years.store') }}" method="POST">
             @csrf
 
             <div class="space-y-6">
@@ -101,7 +101,7 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-3">
-                    <a href="{{ route('school-years.index', app('tenant')->name) }}"
+                    <a href="{{ route('school-years.index') }}"
                        class="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-white transition-colors">
                         Annuler
                     </a>

@@ -8,15 +8,15 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::table('homework_submissions', function (Blueprint $table) {
-            $table->softDeletes(); // Ajoute la colonne deleted_at
-        });
+        // Schema::table('homework_submissions', function (Blueprint $table) {
+        //     $table->softDeletes(); // Ajoute la colonne deleted_at
+        // });
     }
 
     public function down()
     {
-        Schema::table('homework_submissions', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        // Schema::table('homework_submissions', function (Blueprint $table) {
+        //     $table->dropSoftDeletes();
+        // });
     }
 };

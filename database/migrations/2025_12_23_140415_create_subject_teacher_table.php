@@ -8,34 +8,34 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('subject_teacher', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('subject_id');
-            $table->unsignedBigInteger('teacher_id');
-            $table->timestamps();
+        // Schema::create('subject_teacher', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->unsignedBigInteger('subject_id');
+        //     $table->unsignedBigInteger('teacher_id');
+        //     $table->timestamps();
             
-            // Clés étrangères
-            $table->foreign('subject_id')
-                  ->references('id')
-                  ->on('subjects')
-                  ->onDelete('cascade');
+        //     // Clés étrangères
+        //     $table->foreign('subject_id')
+        //           ->references('id')
+        //           ->on('subjects')
+        //           ->onDelete('cascade');
                   
-            $table->foreign('teacher_id')
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('cascade');
+        //     $table->foreign('teacher_id')
+        //           ->references('id')
+        //           ->on('users')
+        //           ->onDelete('cascade');
             
-            // Empêcher les doublons
-            $table->unique(['subject_id', 'teacher_id']);
+        //     // Empêcher les doublons
+        //     $table->unique(['subject_id', 'teacher_id']);
             
-            // Indexes
-            $table->index('subject_id');
-            $table->index('teacher_id');
-        });
+        //     // Indexes
+        //     $table->index('subject_id');
+        //     $table->index('teacher_id');
+        // });
     }
 
     public function down()
     {
-        Schema::dropIfExists('subject_teacher');
+        // Schema::dropIfExists('subject_teacher');
     }
 };

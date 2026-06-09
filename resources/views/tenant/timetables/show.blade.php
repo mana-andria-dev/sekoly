@@ -21,13 +21,13 @@
             
             <div class="flex items-center gap-3">
                 @if($conflicts->isNotEmpty())
-                <a href="{{ route('timetables.conflicts', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
+                <a href="{{ route('timetables.conflicts', ['timetable' => $timetable->id]) }}"
                    class="px-4 py-2.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 rounded-lg text-sm font-medium transition-all duration-200">
                     ⚠️ {{ $conflicts->count() }} conflit(s)
                 </a>
                 @endif
                 
-                <a href="{{ route('timetables.manage-slots', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
+                <a href="{{ route('timetables.manage-slots', ['timetable' => $timetable->id]) }}"
                    class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium text-white transition-all duration-200">
                     Gérer les créneaux
                 </a>
@@ -40,16 +40,16 @@
                     
                     <div x-show="open" @click.away="open = false"
                          class="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-lg z-10">
-                        <a href="{{ route('timetables.print', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
+                        <a href="{{ route('timetables.print', ['timetable' => $timetable->id]) }}"
                            target="_blank"
                            class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800">
                             Imprimer
                         </a>
-                        <a href="{{ route('timetables.duplicate', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}"
+                        <a href="{{ route('timetables.duplicate', ['timetable' => $timetable->id]) }}"
                            class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800">
                             Dupliquer
                         </a>
-                        <form action="{{ route('timetables.destroy', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}" 
+                        <form action="{{ route('timetables.destroy', ['timetable' => $timetable->id]) }}" 
                               method="POST">
                             @csrf
                             @method('DELETE')
@@ -255,7 +255,7 @@
                                         
                                         <!-- Menu d'actions au survol -->
                                         <div class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <a href="{{ route('timetables.manage-slots', ['tenant' => app('tenant')->name, 'timetable' => $timetable->id]) }}?edit={{ $currentSlot->id }}"
+                                            <a href="{{ route('timetables.manage-slots', ['timetable' => $timetable->id]) }}?edit={{ $currentSlot->id }}"
                                                class="p-1 text-gray-400 hover:text-white bg-gray-800 rounded">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>

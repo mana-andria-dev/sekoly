@@ -65,10 +65,12 @@
                         class="tab-link py-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200 border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-700">
                     Affectations <span class="ml-1 px-2 py-0.5 text-xs bg-primary-600/20 text-primary-400 rounded-full">{{ $assignmentStats['total'] }}</span>
                 </button>
+                {{--
                 <button type="button" data-tab="timetable" 
                         class="tab-link py-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200 border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-700">
                     Emploi du temps
                 </button>
+                --}}
             </nav>
         </div>
     </div>

@@ -16,11 +16,8 @@ use App\Http\Controllers\Controller;
 class ExamController extends Controller
 {
     public function index(Request $request)
-    {
-        $tenant = app('tenant');
-        
+    {   
         $exams = Exam::with(['class', 'subject', 'teacher'])
-            ->where('tenant_id', $tenant->id)
             ->when($request->class_id, function($query, $classId) {
                 return $query->where('class_id', $classId);
             })
@@ -42,17 +39,16 @@ class ExamController extends Controller
             ->orderBy('exam_date', 'desc')
             ->paginate(15);
             
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $subjects = Subject::where('tenant_id', $tenant->id)->get();
+        $classes = SchoolClass::get();
+        $subjects = Subject::get();
         
         return view('tenant.exams.index', compact('exams', 'classes', 'subjects'));
     }
     
     public function create()
     {
-        $tenant = app('tenant');
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $subjects = Subject::where('tenant_id', $tenant->id)->get();
+        $classes = SchoolClass::get();
+        $subjects = Subject::get();
         $teachers = Teacher::where('status', 'active')->get();
             
         return view('tenant.exams.create', compact('classes', 'subjects', 'teachers'));
@@ -78,8 +74,6 @@ class ExamController extends Controller
             'instructions' => 'nullable|array',
         ]);
         
-        $tenant = app('tenant');
-        $validated['tenant_id'] = $tenant->id;
         $validated['status'] = 'scheduled';
         
         // Calculer la durée en minutes si non fournie
@@ -91,13 +85,13 @@ class ExamController extends Controller
         
         Exam::create($validated);
         
-        return redirect()->route('exams.index', $tenant->name)
+        return redirect()->route('exams.index')
             ->with('success', 'Examen créé avec succès');
     }
     
-    public function show($tenant, Exam $exam)
+    public function show($id)
     {
-        $this->authorizeTenant($exam);
+        $exam = Exam::findOrFail($id);
         $exam->load(['class', 'subject', 'teacher', 'results.student']);
         
         // Récupérer les élèves de la classe depuis la table users
@@ -116,21 +110,19 @@ class ExamController extends Controller
         return view('tenant.exams.show', compact('exam', 'students', 'totalStudents', 'resultsCount', 'gradedCount', 'averageScore'));
     }
     
-    public function edit($tenant, Exam $exam)
+    public function edit($id)
     {
-        $this->authorizeTenant($exam);
-        
-        $tenant = app('tenant');
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $subjects = Subject::where('tenant_id', $tenant->id)->get();
+        $exam = Exam::findOrFail($id);
+        $classes = SchoolClass::get();
+        $subjects = Subject::get();
         $teachers = Teacher::where('status', 'active')->get();
             
         return view('tenant.exams.edit', compact('exam', 'classes', 'subjects', 'teachers'));
     }
     
-    public function update(Request $request, $tenant, Exam $exam)
+    public function update(Request $request, $id)
     {
-        $this->authorizeTenant($exam);
+        $exam = Exam::findOrFail($id);
         
         $validated = $request->validate([
             'class_id' => 'required|exists:school_classes,id',
@@ -153,13 +145,13 @@ class ExamController extends Controller
         
         $exam->update($validated);
         
-        return redirect()->route('exams.index', app('tenant')->name)
+        return redirect()->route('exams.index')
             ->with('success', 'Examen mis à jour avec succès');
     }
     
-    public function destroy($tenant, Exam $exam)
+    public function destroy($id)
     {
-        $this->authorizeTenant($exam);
+        $exam = Exam::findOrFail($id);
         
         // Supprimer également les résultats
         $exam->results()->delete();
@@ -169,9 +161,9 @@ class ExamController extends Controller
             ->with('success', 'Examen supprimé avec succès');
     }
     
-    public function storeResults($tenant, Request $request, Exam $exam)
+    public function storeResults(Request $request, $id)
     {
-        $this->authorizeTenant($exam);
+        $exam = Exam::findOrFail($id);
         
         // Récupérer les IDs des élèves de la classe (depuis users)
         $studentIds = $exam->class->students()->pluck('users.id')->toArray();
@@ -210,9 +202,9 @@ class ExamController extends Controller
         return redirect()->back()->with('success', $savedCount . ' résultat(s) enregistré(s)');
     }    
     
-    public function results($tenant, Exam $exam)
+    public function results($id)
     {
-        $this->authorizeTenant($exam);
+        $exam = Exam::findOrFail($id);
         $exam->load(['results.student']);
         
         return view('tenant.exams.results', compact('exam'));

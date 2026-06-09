@@ -8,6 +8,7 @@ use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
@@ -16,10 +17,7 @@ class HomeworkController extends Controller
 {
     public function index(Request $request)
     {
-        $tenant = app('tenant');
-        
         $homeworks = Homework::with(['class', 'subject', 'teacher'])
-            ->where('tenant_id', $tenant->id)
             ->when($request->class_id, function($query, $classId) {
                 return $query->where('class_id', $classId);
             })
@@ -32,17 +30,16 @@ class HomeworkController extends Controller
             ->orderBy('due_date', 'desc')
             ->paginate(15);
             
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $subjects = Subject::where('tenant_id', $tenant->id)->get();
+        $classes = SchoolClass::get();
+        $subjects = Subject::get();
         
         return view('tenant.homeworks.index', compact('homeworks', 'classes', 'subjects'));
     }
     
     public function create()
     {
-        $tenant = app('tenant');
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $subjects = Subject::where('tenant_id', $tenant->id)->get();
+        $classes = SchoolClass::get();
+        $subjects = Subject::get();
         $teachers = Teacher::where('status', 'active')->get();
             
         return view('tenant.homeworks.create', compact('classes', 'subjects', 'teachers'));
@@ -64,9 +61,8 @@ class HomeworkController extends Controller
             'attachments' => 'nullable|array',
         ]);
         
-        $tenant = app('tenant');
-        $validated['tenant_id'] = $tenant->id;
         $validated['status'] = 'active';
+        $tenant = tenant();
         
         // Gérer les fichiers joints
         if ($request->hasFile('attachments')) {
@@ -84,38 +80,39 @@ class HomeworkController extends Controller
         
         Homework::create($validated);
         
-        return redirect()->route('homeworks.index', $tenant->name)
+        return redirect()->route('homeworks.index')
             ->with('success', 'Devoir créé avec succès');
     }
     
-    public function show($tenant, Homework $homework)
+    public function show($id)
     {
-        $this->authorizeTenant($homework);
+        $homework = Homework::findOrFail($id);
         $homework->load(['class', 'subject', 'teacher', 'submissions.student']);
+        $classId = $homework->class_id;
         
-        $students = Student::whereHas('enrollments', function($query) use ($homework) {
-            $query->where('class_id', $homework->class_id);
-        })->get();
-        
+        $students = User::students()
+            ->when($classId, function($query) use ($classId) {
+                $query->whereHas('studentEnrollments', function($q) use ($classId) {
+                    $q->where('class_id', $classId);
+                });
+            })
+            ->get();
+
         return view('tenant.homeworks.show', compact('homework', 'students'));
     }
     
-    public function edit($tenant, Homework $homework)
+    public function edit($id)
     {
-        $this->authorizeTenant($homework);
-        
-        $tenant = app('tenant');
-        $classes = SchoolClass::where('tenant_id', $tenant->id)->get();
-        $subjects = Subject::where('tenant_id', $tenant->id)->get();
+        $homework = Homework::findOrFail($id);
+        $classes = SchoolClass::get();
+        $subjects = Subject::get();
         $teachers = Teacher::where('status', 'active')->get();
             
         return view('tenant.homeworks.edit', compact('homework', 'classes', 'subjects', 'teachers'));
     }
     
-    public function update($tenant, Request $request, Homework $homework)
+    public function update(Request $request, $id)
     {
-        $this->authorizeTenant($homework);
-        
         $validated = $request->validate([
             'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
@@ -130,15 +127,16 @@ class HomeworkController extends Controller
             'status' => 'required|in:active,expired,cancelled',
         ]);
         
+        $homework = Homework::findOrFail($id);
         $homework->update($validated);
         
-        return redirect()->route('homeworks.index', app('tenant')->name)
+        return redirect()->route('homeworks.index')
             ->with('success', 'Devoir mis à jour avec succès');
     }
     
-    public function destroy(Homework $homework)
+    public function destroy($id)
     {
-        $this->authorizeTenant($homework);
+        $homework = Homework::findOrFail($id);
         
         // Supprimer les fichiers joints
         if ($homework->attachments) {
@@ -149,7 +147,7 @@ class HomeworkController extends Controller
         
         $homework->delete();
         
-        return redirect()->route('homeworks.index', app('tenant')->name)
+        return redirect()->route('homeworks.index')
             ->with('success', 'Devoir supprimé avec succès');
     }
     

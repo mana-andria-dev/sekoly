@@ -11,9 +11,7 @@ class SchoolYearController extends Controller
 {
     public function index()
     {
-        $years = SchoolYear::where('tenant_id', app('tenant')->id)
-            ->orderBy('start_date', 'desc')
-            ->get();
+        $years = SchoolYear::orderBy('start_date', 'desc')->get();
             
         return view('tenant.school-years.index', compact('years'));
     }
@@ -36,14 +34,10 @@ class SchoolYearController extends Controller
         $startDate = now()->setDate($startYear, 9, 1);
         $endDate   = now()->setDate($endYear, 7, 31);        
 
-        $tenant = app('tenant');
-
         // Désactiver toutes les autres années
-        SchoolYear::where('tenant_id', $tenant->id)
-            ->update(['is_active' => false]);
+        SchoolYear::update(['is_active' => false]);
 
         $schoolYear = SchoolYear::create([
-            'tenant_id'      => $tenant->id,
             'name'           => $request->name,
             'period_type_id' => $request->period_type_id,
             'start_date'     => $startDate,
@@ -51,7 +45,7 @@ class SchoolYearController extends Controller
             'is_active'      => true,
         ]);
 
-        return redirect()->route('school-years.index', $tenant->name)
+        return redirect()->route('school-years.index')
             ->with('success', 'Année scolaire créée et activée avec succès');
     }
     

@@ -13,7 +13,7 @@ class UserController extends Controller
     public function index()
     {
         return view('tenant.users.index', [
-            'users' => User::where('tenant_id', app('tenant')->id)->get()
+            'users' => User::get()
         ]);
     }
 
@@ -61,10 +61,10 @@ class UserController extends Controller
         return redirect('/users')->with('success', 'Utilisateur modifié');
     }
 
-    public function destroy($tenant, User $user)
+    public function destroy($id)
     {
-        $this->authorizeTenant($user);
-
+        // $this->authorizeTenant($user);
+        $user = User::findOrFail($id);
         $user->delete();
 
         return back()->with('success', 'Utilisateur supprimé');

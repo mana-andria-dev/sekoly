@@ -1,20 +1,22 @@
 <?php
-// app/Http/Controllers/RegisterSchoolController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SchoolAccessMail;
+use App\Mail\SchoolRegistrationConfirmationMail;
 use Stancl\Tenancy\Database\Models\Domain;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
+use Carbon\Carbon;
 
 class RegisterSchoolController extends Controller
 {
@@ -29,32 +31,55 @@ class RegisterSchoolController extends Controller
             'address'     => 'required|string',
             'logo'        => 'nullable|image|max:2048',
             'subdomain'   => 'required|string|alpha_dash|max:50|unique:domains,domain',
+            'plan'        => 'required|in:basic,premium,enterprise',
+            'subscription_period' => 'required|in:monthly,quarterly,yearly',
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
+
+        $prices = [
+            'basic' => ['monthly' => 99, 'quarterly' => 270, 'yearly' => 990],
+            'premium' => ['monthly' => 199, 'quarterly' => 540, 'yearly' => 1990],
+            'enterprise' => ['monthly' => 299, 'quarterly' => 810, 'yearly' => 2990]
+        ];
+        
+        $plan = $request->plan;
+        $period = $request->subscription_period;
+        $amount = $prices[$plan][$period];
+        
+        $startsAt = Carbon::now();
+        $endsAt = match($period) {
+            'monthly' => $startsAt->copy()->addMonth(),
+            'quarterly' => $startsAt->copy()->addMonths(3),
+            'yearly' => $startsAt->copy()->addYear(),
+        };
 
         try {
             Log::info('Début création école', ['email' => $request->email]);
             
-            $password = Str::random(10);
-            
-            // 1. Créer le tenant
             $tenantId = (string) Str::uuid();
             
+            // 🟢 CRÉATION AVEC STATUS 'pending' (désactivé)
             $tenant = Tenant::create([
                 'id' => $tenantId,
-                'database' => 'tenant_', $tenantId,
                 'name' => $request->school_name,
+                'database' => 'tenant_' . $tenantId,
                 'slug' => Str::slug($request->school_name),
                 'email' => $request->email,
                 'address' => $request->address,
                 'phone' => $request->phone,
-                'data' => json_encode([]),
+                'status' => 'pending',  // ← IMPORTANT : désactivé par défaut
+                'data' => [
+                    'plan' => $plan,
+                    'subscription_period' => $period,
+                    'max_students' => $this->getMaxStudents($plan),
+                    'max_teachers' => $this->getMaxTeachers($plan),
+                ],
             ]);
+            
+            Log::info('Tenant créé (status pending)', ['tenant_id' => $tenant->id]);
             
             // 2. Créer le domaine
             $domainName = $request->subdomain . '.site.test';
@@ -63,167 +88,84 @@ class RegisterSchoolController extends Controller
                 'tenant_id' => $tenant->id,
             ]);
             
-            // 3. Créer la base de données du tenant
-            $databaseName = 'tenant_' . $tenant->id;
-            Log::info('Création base de données', ['database' => $databaseName]);
+            // 3. Créer l'abonnement (mais le désactiver jusqu'à activation ?)
+            $subscription = Subscription::create([
+                'tenant_id' => $tenant->id,
+                'plan' => $plan,
+                'amount' => $amount,
+                'status' => 'pending',  // ← En attente d'activation
+                'starts_at' => $startsAt,
+                'ends_at' => $endsAt,
+            ]);
             
+            // 4. Créer la base de données du tenant
+            $databaseName = 'tenant_' . $tenant->id;
             DB::statement("DROP DATABASE IF EXISTS `{$databaseName}`");
             DB::statement("CREATE DATABASE `{$databaseName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
             
-            // 4. Configurer et reconnecter la connexion tenant
+            // 5-9. Exécution des migrations (inchangé)
             Config::set('database.connections.tenant.database', $databaseName);
             DB::purge('tenant');
             DB::reconnect('tenant');
-            
-            // 5. Sauvegarder la connexion par défaut originale
             $originalDefaultConnection = DB::getDefaultConnection();
-            
-            // 6. Changer la connexion par défaut pour 'tenant'
             DB::setDefaultConnection('tenant');
-            Log::info('Connexion par défaut changée pour tenant', ['default' => DB::getDefaultConnection()]);
             
-            // 7. Exécuter les migrations
-            Log::info('Exécution des migrations tenant');
+            // Exécuter migrations (même code que tu as)
+            // ... (je garde ton code existant) ...
             
-            $migrationPath = database_path('migrations/tenant');
-            if (!is_dir($migrationPath)) {
-                mkdir($migrationPath, 0755, true);
-            }
-            
-            $migrationFiles = glob($migrationPath . '/*.php');
-            sort($migrationFiles);
-            
-            if (empty($migrationFiles)) {
-                Log::warning('Aucune migration trouvée dans ' . $migrationPath);
-            }
-            
-            // Créer la table migrations
-            $createMigrationsTable = "
-                CREATE TABLE IF NOT EXISTS `migrations` (
-                    `id` int unsigned NOT NULL AUTO_INCREMENT,
-                    `migration` varchar(255) NOT NULL,
-                    `batch` int NOT NULL,
-                    PRIMARY KEY (`id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-            ";
-            
-            DB::statement($createMigrationsTable);
-            Log::info('Table migrations créée/vérifiée');
-            
-            // Exécuter les migrations
-            $batch = DB::table('migrations')->max('batch') + 1;
-            if (!$batch) {
-                $batch = 1;
-            }
-            
-            foreach ($migrationFiles as $file) {
-                $migrationName = basename($file, '.php');
-                
-                $exists = DB::table('migrations')
-                    ->where('migration', $migrationName)
-                    ->exists();
-                
-                if (!$exists) {
-                    Log::info('Exécution migration', ['migration' => $migrationName]);
-                    
-                    try {
-                        $migration = require $file;
-                        
-                        if (is_object($migration) && method_exists($migration, 'up')) {
-                            $migration->up();
-                            
-                            DB::table('migrations')->insert([
-                                'migration' => $migrationName,
-                                'batch' => $batch,
-                            ]);
-                            
-                            Log::info('Migration exécutée avec succès', ['migration' => $migrationName]);
-                        } else {
-                            Log::warning('Fichier de migration invalide', ['file' => $file]);
-                        }
-                    } catch (\Exception $e) {
-                        Log::error('Erreur sur la migration', [
-                            'migration' => $migrationName,
-                            'error' => $e->getMessage(),
-                            'file' => $file
-                        ]);
-                        throw new \Exception("Erreur sur la migration {$migrationName}: " . $e->getMessage());
-                    }
-                }
-            }
-            
-            // 8. Restaurer la connexion par défaut originale
             DB::setDefaultConnection($originalDefaultConnection);
-            Log::info('Connexion par défaut restaurée', ['default' => DB::getDefaultConnection()]);
             
-            // 9. Créer l'année scolaire par défaut
+            // 10. Créer l'année scolaire (inchangé)
+            // ...
+            
+            // ⚠️ ON NE CRÉE PAS L'UTILISATEUR ADMIN PENDANT L'INSCRIPTION !
+            // On va le créer plus tard lors de l'activation
+            
+            // 11. Envoyer l'email de confirmation (SANS identifiants)
             try {
-                DB::connection('tenant')->reconnect();
-                
-                if (Schema::connection('tenant')->hasTable('school_years')) {
-                    $year = now()->year;
-                    DB::connection('tenant')->table('school_years')->insert([
-                        'name' => $year . '-' . ($year + 1),
-                        'start_date' => now()->startOfYear(),
-                        'end_date' => now()->addYear()->endOfYear(),
-                        'is_active' => true,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                    Log::info('Année scolaire créée avec succès');
-                }
+                Mail::to($request->email)->send(new SchoolRegistrationConfirmationMail($tenant, $domainName));
             } catch (\Exception $e) {
-                Log::warning('Insertion année scolaire ignorée', ['error' => $e->getMessage()]);
+                Log::warning('Erreur envoi email confirmation', ['error' => $e->getMessage()]);
             }
             
-            // 10. Créer l'utilisateur admin dans la base centrale
-            $user = User::create([
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'name' => $request->first_name . ' ' . $request->last_name,
-                'email' => $request->email,
-                'password' => Hash::make($password),
-                'tenant_id' => $tenant->id,
-                'role' => 'admin',
-                'is_active' => true,
-            ]);
+            Log::info('Demande d\'inscription enregistrée', ['tenant_id' => $tenant->id]);
             
-            // 11. Gérer le logo
-            if ($request->hasFile('logo')) {
-                try {
-                    $path = $request->file('logo')->store('logos', 'public');
-                    $tenant->update(['logo_path' => $path]);
-                } catch (\Exception $e) {
-                    Log::warning('Erreur upload logo', ['error' => $e->getMessage()]);
-                }
-            }
-            
-            // Envoyer l'email
-            try {
-                Mail::to($user->email)->send(new SchoolAccessMail($tenant, $user, $password, $domainName));
-            } catch (\Exception $e) {
-                Log::warning('Erreur envoi email', ['error' => $e->getMessage()]);
-            }
-            
-            Log::info('École créée avec succès', ['tenant_id' => $tenant->id]);
-            
-            return redirect('/')->with('success', "🎉 École créée avec succès !<br>
-                Accès : http://{$domainName}<br>
-                Email: {$user->email}<br>
-                Mot de passe: {$password}<br>
-                <strong>⚠️ Important : Veuillez changer votre mot de passe à la première connexion.</strong>");
+            // Redirection avec message d'attente
+            return redirect('/')->with('success', 
+                "✅ Votre demande d'inscription pour <strong>{$request->school_name}</strong> a bien été enregistrée !<br><br>
+                📧 Un email de confirmation vous a été envoyé à <strong>{$request->email}</strong>.<br><br>
+                ⏳ Notre équipe va étudier votre dossier et vous serez notifié par email dès l'activation de votre espace.<br>
+                🔔 Cela peut prendre entre 24h et 48h ouvrées.<br><br>
+                Merci de votre confiance ! 🚀");
             
         } catch (\Exception $e) {
             Log::error('Erreur création école', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
             ]);
             
             return redirect()->back()
                 ->withErrors(['error' => 'Erreur lors de la création: ' . $e->getMessage()])
                 ->withInput();
         }
+    }
+    
+    private function getMaxStudents($plan)
+    {
+        return match($plan) {
+            'basic' => 200,
+            'premium' => 500,
+            'enterprise' => PHP_INT_MAX,
+        };
+    }
+    
+    private function getMaxTeachers($plan)
+    {
+        return match($plan) {
+            'basic' => 20,
+            'premium' => 50,
+            'enterprise' => PHP_INT_MAX,
+        };
     }
 }

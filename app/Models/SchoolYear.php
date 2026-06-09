@@ -12,7 +12,6 @@ class SchoolYear extends Model
     protected $guarded = [];
     
     protected $fillable = [
-        'tenant_id',
         'name',
         'start_date',
         'end_date',
