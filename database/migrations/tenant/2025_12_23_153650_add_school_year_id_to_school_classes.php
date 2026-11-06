@@ -11,7 +11,7 @@ class AddSchoolYearIdToSchoolClasses extends Migration
         Schema::table('school_classes', function (Blueprint $table) {
             // Vérifiez d'abord si la colonne n'existe pas déjà
             if (!Schema::hasColumn('school_classes', 'school_year_id')) {
-                $table->unsignedBigInteger('school_year_id')->nullable()->after('tenant_id');
+                $table->unsignedBigInteger('school_year_id')->nullable()->after('id');
                 $table->foreign('school_year_id')
                       ->references('id')
                       ->on('school_years')

@@ -82,7 +82,7 @@ class RegisterSchoolController extends Controller
             Log::info('Tenant créé (status pending)', ['tenant_id' => $tenant->id]);
             
             // 2. Créer le domaine
-            $domainName = $request->subdomain . '.site.test';
+            $domainName = $request->subdomain . config('app.tenant_base_domain');;
             Domain::create([
                 'domain' => $domainName,
                 'tenant_id' => $tenant->id,
@@ -100,43 +100,102 @@ class RegisterSchoolController extends Controller
             
             // 4. Créer la base de données du tenant
             $databaseName = 'tenant_' . $tenant->id;
-            DB::statement("DROP DATABASE IF EXISTS `{$databaseName}`");
-            DB::statement("CREATE DATABASE `{$databaseName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            DB::statement("CREATE DATABASE IF NOT EXISTS `{$databaseName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+// Debug
+            $exists = DB::select("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?", [$databaseName]);
+            Log::info('DB tenant créée', [
+                'tenant_id' => $tenantId,
+                'database' => $databaseName,
+                'exists' => !empty($exists),
+            ]);
+
+            // Vérifie l'ordre des migrations AVANT exécution
+            $migrationPath = database_path('migrations/tenant');
+            $files = glob($migrationPath . '/*.php');
+            sort($files);
+            $classSubjectFiles = array_filter($files, fn($f) => str_contains($f, 'class_subject'));
+            Log::info('Fichiers class_subject trouvés', [
+                'files' => array_values($classSubjectFiles),
+            ]);            
             
-            // 5-9. Exécution des migrations (inchangé)
+            // 5. Configurer la connexion tenant
             Config::set('database.connections.tenant.database', $databaseName);
             DB::purge('tenant');
-            DB::reconnect('tenant');
+
             $originalDefaultConnection = DB::getDefaultConnection();
             DB::setDefaultConnection('tenant');
-            
-            // Exécuter migrations (même code que tu as)
-            // ... (je garde ton code existant) ...
-            
-            DB::setDefaultConnection($originalDefaultConnection);
-            
-            // 10. Créer l'année scolaire (inchangé)
-            // ...
-            
-            // ⚠️ ON NE CRÉE PAS L'UTILISATEUR ADMIN PENDANT L'INSCRIPTION !
-            // On va le créer plus tard lors de l'activation
-            
-            // 11. Envoyer l'email de confirmation (SANS identifiants)
+
             try {
-                Mail::to($request->email)->send(new SchoolRegistrationConfirmationMail($tenant, $domainName));
+                // 🔑 Initialise le contexte tenant → déclenche loadMigrationsFrom
+                tenancy()->initialize($tenant);
+
+                \Illuminate\Support\Facades\Artisan::call('migrate', [
+                    '--database' => 'tenant',
+                    '--path'     => 'database/migrations/tenant',
+                    '--force'    => true,
+                ]);
+                
+                Log::info('Migrations tenant exécutées', [
+                    'tenant_id' => $tenant->id,
+                    'output' => \Illuminate\Support\Facades\Artisan::output(),
+                ]);
+                
+                // 7. Seeders
+                \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                    '--database' => 'tenant',
+                    '--force' => true,
+                ]);
+                
+                // 8. Année scolaire
+                // DB::connection('tenant')->table('academic_years')->insert([
+                //     'name' => date('Y') . '-' . (date('Y') + 1),
+                //     'start_date' => date('Y') . '-09-01',
+                //     'end_date' => (date('Y') + 1) . '-06-30',
+                //     'is_current' => true,
+                //     'created_at' => now(),
+                //     'updated_at' => now(),
+                // ]);
+                
+                Log::info('Année scolaire créée', ['tenant_id' => $tenant->id]);
+                
             } catch (\Exception $e) {
-                Log::warning('Erreur envoi email confirmation', ['error' => $e->getMessage()]);
+                Log::error('Erreur migrations tenant', [
+                    'tenant_id' => $tenant->id,
+                    'error' => $e->getMessage(),
+                ]);
+                throw $e;
+            } finally {
+                // 🔑 Termine le contexte tenant
+                tenancy()->end();
+                
+                DB::setDefaultConnection($originalDefaultConnection);
+                DB::purge('tenant');
             }
-            
-            Log::info('Demande d\'inscription enregistrée', ['tenant_id' => $tenant->id]);
-            
-            // Redirection avec message d'attente
-            return redirect('/')->with('success', 
-                "✅ Votre demande d'inscription pour <strong>{$request->school_name}</strong> a bien été enregistrée !<br><br>
-                📧 Un email de confirmation vous a été envoyé à <strong>{$request->email}</strong>.<br><br>
-                ⏳ Notre équipe va étudier votre dossier et vous serez notifié par email dès l'activation de votre espace.<br>
-                🔔 Cela peut prendre entre 24h et 48h ouvrées.<br><br>
-                Merci de votre confiance ! 🚀");
+
+            // 🟢 SUCCÈS : Redirection vers l'accueil avec message
+            Log::info('École créée avec succès', ['tenant_id' => $tenantId]);
+
+            $successMessage = "
+                <p><strong>Votre école a bien été enregistrée !</strong></p>
+                <p>Voici vos informations d'accès :</p>
+                <ul class='mb-2'>
+                    <li><strong>École :</strong> {$request->school_name}</li>
+                    <li><strong>URL d'accès :</strong> 
+                        <a href='http://{$request->subdomain}.site.test' target='_blank'>
+                            http://{$request->subdomain}.site.test
+                        </a>
+                    </li>
+                    <li><strong>Email administrateur :</strong> {$request->email}</li>
+                </ul>
+                <p class='mb-0 text-muted small'>
+                    <i class='bi bi-info-circle'></i> 
+                    Votre compte est en attente d'activation par l'administrateur. 
+                    Vous recevrez un email dès que votre école sera activée.
+                </p>
+            ";
+
+            return redirect()->route('home')->with('success', $successMessage);
             
         } catch (\Exception $e) {
             Log::error('Erreur création école', [
@@ -144,6 +203,23 @@ class RegisterSchoolController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
+
+            // 🧹 Cleanup : supprime DB + enregistrements orphelins
+            // if (isset($tenantId)) {
+            //     $dbName = 'tenant_' . $tenantId;
+            //     try {
+            //         DB::statement("DROP DATABASE IF EXISTS `{$dbName}`");
+            //         Domain::where('tenant_id', $tenantId)->delete();
+            //         Subscription::where('tenant_id', $tenantId)->delete();
+            //         Tenant::where('id', $tenantId)->delete();
+            //         Log::info('Cleanup effectué', ['tenant_id' => $tenantId]);
+            //     } catch (\Exception $cleanupError) {
+            //         Log::error('Erreur cleanup', [
+            //             'tenant_id' => $tenantId,
+            //             'error' => $cleanupError->getMessage(),
+            //         ]);
+            //     }
+            // }            
             
             return redirect()->back()
                 ->withErrors(['error' => 'Erreur lors de la création: ' . $e->getMessage()])

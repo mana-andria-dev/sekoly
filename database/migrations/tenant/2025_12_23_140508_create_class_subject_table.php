@@ -6,13 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('class_subject', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('class_id');
             $table->unsignedBigInteger('subject_id');
-            $table->unsignedBigInteger('teacher_id')->nullable(); // Professeur principal pour cette matière dans cette classe
+            $table->unsignedBigInteger('teacher_id')->nullable();
+            
+            // Colonnes fusionnées depuis ameliorer_class_subject
+            $table->integer('hours_per_week')->default(0);
+            $table->decimal('coefficient', 3, 1)->default(1.0);
+            $table->boolean('is_active')->default(true);
+            
             $table->timestamps();
             
             // Clés étrangères
@@ -31,17 +37,17 @@ return new class extends Migration
                   ->on('users')
                   ->onDelete('set null');
             
-            // Empêcher les doublons
+            // Contraintes
             $table->unique(['class_id', 'subject_id']);
             
-            // Indexes
+            // Index
             $table->index('class_id');
             $table->index('subject_id');
             $table->index('teacher_id');
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('class_subject');
     }

@@ -3,6 +3,9 @@
 
 /opt/lampp/bin/php artisan config:clear
 /opt/lampp/bin/php artisan cache:clear
+/opt/lampp/bin/php artisan route:clear
+/opt/lampp/bin/php artisan view:clear
+/opt/lampp/bin/php artisan clear-compiled
 
 /opt/lampp/bin/php artisan tinker
 

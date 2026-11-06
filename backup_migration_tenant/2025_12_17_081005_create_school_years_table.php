@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('school_years', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tenant_id')->index()->cascadeOnDelete();
-            $table->string('name');
-            $table->boolean('is_active')->default(false);
-            $table->timestamps();
-        });
+        DB::connection('tenant')->table('school_years')->insert([
+            'name'       => date('Y') . '-' . (date('Y') + 1),
+            'start_date' => date('Y') . '-09-01',
+            'end_date'   => (date('Y') + 1) . '-06-30',
+            'is_active'  => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**
