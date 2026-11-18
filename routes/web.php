@@ -81,7 +81,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 // Routes du site central (landing page, registration)
-Route::domain('site.test')->group(function () {
+Route::domain(config('app.central_domain', 'sekolyapp.com'))->group(function () {
     Route::get('/', function () {
         return view('home');
     })->name('home');

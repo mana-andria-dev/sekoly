@@ -12,6 +12,13 @@ return [
     
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
 
+    'central_domains' => [
+        'sekolyapp.com',
+        'www.sekolyapp.com',
+        '127.0.0.1',
+        'localhost',
+    ],    
+
     // config/tenancy.php
     'database' => [
         'central_connection' => 'central',

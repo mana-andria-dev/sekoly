@@ -17,7 +17,6 @@ class AddFieldsToClassAssignmentsTable extends Migration
             $table->enum('status', ['active', 'ended', 'pending'])
                   ->default('active')
                   ->after('day_of_week');
-            $table->json('metadata')->nullable()->change();
         });
     }
 

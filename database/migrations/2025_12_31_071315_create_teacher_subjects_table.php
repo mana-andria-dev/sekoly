@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('teacher_subjects', function (Blueprint $table) {
             $table->id();
             $table->foreignId('teacher_id')->constrained()->onDelete('cascade');
-            $table->foreignId('subject_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('subject_id');
+            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
             $table->integer('experience_years')->default(0);
             $table->enum('proficiency_level', ['beginner', 'intermediate', 'advanced', 'expert']);
             $table->boolean('is_primary')->default(false);

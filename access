@@ -27,6 +27,9 @@ Mail::raw('Test SMTP Gmail', function ($message) {
             ->subject('Test sekoly email');
 });
 
+/opt/lampp/bin/mysqldump -u root -p sekoly > sekoly.sql
+
+tar cvf site.tar .
 
 /opt/lampp/bin/php artisan make:migration create_lessons_table
 /opt/lampp/bin/php artisan make:migration create_homeworkss_table
